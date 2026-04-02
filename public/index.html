@@ -1554,12 +1554,12 @@ function render() {
 
   let rightSidebar = `
     <div class="sidebar-right">
+      ${strategyChartHtml}
       <div class="feedback-header-row">
         <div class="section-title" style="padding:0;">Live Feedback</div>
         ${historyBtn}
       </div>
       ${feedbackHtml || '<div style="color:rgba(255,255,255,0.3); font-size:13px; padding:10px;">Feedback will appear here as you play.</div>'}
-      ${strategyChartHtml}
     </div>`;
 
   // ── HISTORY MODAL ──
