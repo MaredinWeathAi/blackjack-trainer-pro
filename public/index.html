@@ -585,6 +585,29 @@
   .strategy-chart .s-p { background: rgba(155,89,182,0.2); color: #bb86fc; }
   .strategy-chart .s-hl { outline: 2px solid #fff; outline-offset: -1px; }
 
+  .strategy-chart td { cursor: help; }
+
+  .strat-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background: #1a1a2e;
+    color: #e8e8e8;
+    border: 1px solid rgba(212,168,67,0.4);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    max-width: 280px;
+    white-space: normal;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .strat-tooltip.visible { opacity: 1; }
+
   /* ── MODAL ── */
   .modal-overlay {
     position: fixed;
@@ -851,10 +874,287 @@
     .mobile-stats { padding-top: calc(10px + env(safe-area-inset-top)); }
     .controls-bar { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
   }
+
+  /* ── COUNTING TRAINER ── */
+  .drill-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .drill-menu h2 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+
+  .drill-menu .subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 12px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .drill-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .drill-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .drill-card:hover {
+    background: rgba(212,168,67,0.08);
+    border-color: rgba(212,168,67,0.3);
+    transform: translateY(-2px);
+  }
+
+  .drill-card .drill-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .drill-card .drill-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .drill-card .drill-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.4;
+  }
+
+  .drill-card .drill-level {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .drill-card .drill-level.beginner { background: rgba(46,204,113,0.15); color: var(--green); }
+  .drill-card .drill-level.intermediate { background: rgba(212,168,67,0.15); color: var(--gold); }
+  .drill-card .drill-level.advanced { background: rgba(231,76,60,0.15); color: var(--red); }
+
+  .drill-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .drill-stats-bar {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+
+  .drill-stats-bar .ds {
+    text-align: center;
+  }
+
+  .drill-stats-bar .ds-label {
+    color: rgba(255,255,255,0.4);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .drill-stats-bar .ds-value {
+    font-size: 22px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .drill-card-display {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    min-height: 120px;
+    align-items: center;
+  }
+
+  .drill-card-display .card {
+    transition: all 0.3s;
+  }
+
+  .drill-card-display .card.faded {
+    opacity: 0.25;
+    transform: scale(0.9);
+  }
+
+  .count-badge {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 8px;
+    z-index: 2;
+  }
+
+  .count-badge.plus { background: var(--green); color: #000; }
+  .count-badge.minus { background: var(--red); color: #fff; }
+  .count-badge.zero { background: rgba(255,255,255,0.2); color: #fff; }
+
+  .drill-input-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .drill-input {
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 24px;
+    font-weight: 800;
+    font-family: inherit;
+    color: #fff;
+    text-align: center;
+    width: 120px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .drill-input:focus {
+    border-color: var(--gold);
+  }
+
+  .drill-result-flash {
+    font-size: 18px;
+    font-weight: 800;
+    padding: 8px 20px;
+    border-radius: 12px;
+    animation: popIn 0.3s ease;
+  }
+
+  .drill-result-flash.correct {
+    background: rgba(46,204,113,0.15);
+    color: var(--green);
+  }
+
+  .drill-result-flash.wrong {
+    background: rgba(231,76,60,0.15);
+    color: var(--red);
+  }
+
+  .drill-progress-bar {
+    width: 100%;
+    max-width: 400px;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .drill-progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+
+  .drill-results {
+    text-align: center;
+  }
+
+  .drill-results h2 {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+
+  .drill-results .grade {
+    font-size: 64px;
+    font-weight: 900;
+    margin: 16px 0;
+  }
+
+  .drill-results .grade.a { color: var(--green); }
+  .drill-results .grade.b { color: var(--gold); }
+  .drill-results .grade.c { color: var(--red); }
+
+  .drill-results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .drill-results-grid .dr-stat {
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .drill-results-grid .dr-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .drill-results-grid .dr-value {
+    font-size: 24px;
+    font-weight: 800;
+    margin-top: 4px;
+  }
+
+  .hi-lo-ref {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+  }
+
+  .hi-lo-ref span {
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+  }
+
+  @media (max-width: 600px) {
+    .drill-cards { grid-template-columns: 1fr; }
+    .drill-results-grid { grid-template-columns: 1fr 1fr; }
+    .drill-card-display .card { width: 52px; height: 74px; }
+  }
 </style>
 </head>
 <body>
 <div class="app" id="app"></div>
+<div class="strat-tooltip" id="stratTooltip"></div>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -898,6 +1198,29 @@ let state = {
   resultClass: '',
   showSummary: false,
   showHistory: false,
+
+  // ── COUNTING TRAINER ──
+  countMode: false,         // true when in counting drill mode
+  countDrill: null,         // 'single' | 'pairs' | 'speed' | 'truecount' | 'shoe'
+  countDrillPhase: 'menu',  // 'menu' | 'running' | 'answer' | 'results'
+  countCards: [],            // cards shown in current drill
+  countCardIndex: 0,         // current card position
+  countUserAnswer: '',       // user's typed answer
+  countCorrectAnswer: 0,     // the real running count
+  countCorrectTC: 0,         // the real true count (for TC drill)
+  countDrillScore: 0,        // correct answers this drill
+  countDrillTotal: 0,        // total questions this drill
+  countDrillStreak: 0,       // current correct streak
+  countDrillBestStreak: 0,   // best streak this session
+  countTimer: 0,             // elapsed seconds
+  countTimerInterval: null,  // interval ref
+  countSpeed: 1200,          // ms per card flip in speed drill
+  countShowValue: true,      // show Hi-Lo values on cards (training wheels)
+  countDrillHistory: [],     // history of answers [{correct, userAns, realAns, cards}]
+  countDecksForTC: 6,        // decks for true count drill
+  countRemainingDecks: 4,    // remaining decks shown in TC drill
+  countAutoFlip: false,      // auto-flip cards in speed mode
+  countFlipTimer: null,      // auto-flip interval
 };
 
 // ── DECK ──
@@ -1439,6 +1762,7 @@ function render() {
             <span>Show Strategy Chart</span>
           </div>
           <button class="btn btn-deal" onclick="startGame()">Start Training</button>
+          <button class="btn btn-secondary" style="margin-top:8px; background:rgba(212,168,67,0.12); color:var(--gold); border:1px solid rgba(212,168,67,0.3);" onclick="enterCountMode()">Card Counting Drills</button>
         </div>
       </div>`;
   } else if (state.phase === 'betting') {
@@ -1461,6 +1785,11 @@ function render() {
           <button class="btn btn-deal" onclick="placeBet(state.betInput)" ${state.betInput > state.bankroll ? 'disabled' : ''}>Deal</button>
           ${state.showCount ? `<div style="font-size:12px; color:rgba(255,255,255,0.35); margin-top:8px;">Suggested: ${optBet.label} ($${optBet.min}–$${optBet.max})</div>` : ''}
         </div>
+      </div>`;
+  } else if (state.phase === 'counting') {
+    mainContent = `
+      <div class="table-surface" style="overflow-y:auto; justify-content:flex-start; padding-top:40px;">
+        ${renderDrillContent()}
       </div>`;
   } else {
     // Playing / result
@@ -1696,7 +2025,12 @@ function render() {
       </div>
     </div>` : '';
 
-  app.innerHTML = leftSidebar + mobileStats + `<div class="main-area">${mainContent}${controls}</div>` + mobileFeedback + rightSidebar + summaryModal + historyModal;
+  if (state.phase === 'counting') {
+    // Full-width layout for counting drills
+    app.innerHTML = `<div class="main-area" style="grid-column: 1 / -1;">${mainContent}</div>`;
+  } else {
+    app.innerHTML = leftSidebar + mobileStats + `<div class="main-area">${mainContent}${controls}</div>` + mobileFeedback + rightSidebar + summaryModal + historyModal;
+  }
 }
 
 function renderMiniStrategyChart() {
@@ -1755,11 +2089,22 @@ function renderMiniStrategyChart() {
   }
 
   let actionClass = { 'H': 's-h', 'S': 's-s', 'D': 's-d', 'P': 's-p' };
+  let actionFull = { 'H': 'Hit', 'S': 'Stand', 'D': 'Double Down', 'P': 'Split' };
+  let actionWhy = {
+    'H': 'Your hand is weak enough that taking another card gives better odds than standing.',
+    'S': 'Your hand is strong enough, or the dealer is likely to bust — standing is safest.',
+    'D': 'The odds are heavily in your favor — double your bet and take exactly one more card.',
+    'P': 'Splitting gives you two better starting hands than playing this pair as one.'
+  };
 
   let headerRow = '<tr><th></th>' + dealerCols.map(c => `<th>${c}</th>`).join('') + '</tr>';
-  let bodyRows = rows.map(r => {
+  let bodyRows = rows.map((r, ri) => {
     let label = r[0];
-    let cells = r.slice(1).map(c => `<td class="${actionClass[c.action] || ''} ${c.highlight ? 's-hl' : ''}">${c.action}</td>`).join('');
+    let cells = r.slice(1).map((c, ci) => {
+      let dealerLabel = dealerCols[ci] === 'A' ? 'Ace' : dealerCols[ci];
+      let tip = `Your hand: ${label} vs Dealer: ${dealerLabel} → ${actionFull[c.action]}. ${actionWhy[c.action]}`;
+      return `<td class="${actionClass[c.action] || ''} ${c.highlight ? 's-hl' : ''}" title="${tip}">${c.action}</td>`;
+    }).join('');
     return `<tr><th>${label}</th>${cells}</tr>`;
   }).join('');
 
@@ -1774,6 +2119,595 @@ function renderMiniStrategyChart() {
         <span class="s-s" style="padding:2px 6px; border-radius:3px;">S = Stand</span>
         <span class="s-d" style="padding:2px 6px; border-radius:3px;">D = Double</span>
         <span class="s-p" style="padding:2px 6px; border-radius:3px;">P = Split</span>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════
+// ── COUNTING TRAINER DRILLS ──
+// ══════════════════════════════════════
+
+function enterCountMode() {
+  state.countMode = true;
+  state.countDrillPhase = 'menu';
+  state.phase = 'counting';
+  render();
+}
+
+function exitCountMode() {
+  stopCountTimer();
+  stopAutoFlip();
+  state.countMode = false;
+  state.phase = 'welcome';
+  state.countDrillPhase = 'menu';
+  render();
+}
+
+function startCountDrill(drillType) {
+  state.countDrill = drillType;
+  state.countDrillPhase = 'running';
+  state.countDrillScore = 0;
+  state.countDrillTotal = 0;
+  state.countDrillStreak = 0;
+  state.countDrillBestStreak = 0;
+  state.countDrillHistory = [];
+  state.countUserAnswer = '';
+  state.countCorrectAnswer = 0;
+  state.countCorrectTC = 0;
+  state.countTimer = 0;
+  state.countCardIndex = 0;
+
+  if (drillType === 'single') {
+    // Show one card at a time, user says running count after each
+    state.countCards = shuffleArray(createShoe(1));
+    state.countCardIndex = 0;
+    state.countCorrectAnswer = countValue(state.countCards[0]);
+  } else if (drillType === 'pairs') {
+    // Show two cards at a time, user gives net count of pair
+    let shoe = shuffleArray(createShoe(1));
+    state.countCards = [];
+    for (let i = 0; i < shoe.length - 1; i += 2) {
+      state.countCards.push([shoe[i], shoe[i+1]]);
+    }
+    state.countCardIndex = 0;
+    state.countCorrectAnswer = countValue(state.countCards[0][0]) + countValue(state.countCards[0][1]);
+  } else if (drillType === 'speed') {
+    // Cards flip automatically, user tracks running count mentally, checked at intervals
+    state.countCards = shuffleArray(createShoe(1));
+    state.countCardIndex = 0;
+    state.countCorrectAnswer = 0;
+    state.countAutoFlip = true;
+    startAutoFlip();
+  } else if (drillType === 'truecount') {
+    // Given a running count + decks remaining, compute true count
+    generateTCQuestion();
+  } else if (drillType === 'shoe') {
+    // Full 6-deck shoe, cards dealt in groups, periodic count checks
+    state.countCards = shuffleArray(createShoe(6));
+    state.countCardIndex = 0;
+    state.countCorrectAnswer = 0;
+  }
+
+  startCountTimer();
+  render();
+}
+
+function generateTCQuestion() {
+  // Random running count between -20 and +20, random remaining decks
+  state.countCorrectAnswer = Math.floor(Math.random() * 41) - 20;
+  state.countRemainingDecks = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5][Math.floor(Math.random() * 10)];
+  state.countCorrectTC = Math.round((state.countCorrectAnswer / state.countRemainingDecks) * 10) / 10;
+}
+
+function startCountTimer() {
+  stopCountTimer();
+  state.countTimer = 0;
+  state.countTimerInterval = setInterval(() => {
+    state.countTimer++;
+    // Update timer display without full re-render
+    let el = document.getElementById('drillTimer');
+    if (el) el.textContent = formatTime(state.countTimer);
+  }, 1000);
+}
+
+function stopCountTimer() {
+  if (state.countTimerInterval) {
+    clearInterval(state.countTimerInterval);
+    state.countTimerInterval = null;
+  }
+}
+
+function startAutoFlip() {
+  stopAutoFlip();
+  state.countFlipTimer = setInterval(() => {
+    if (state.countCardIndex < state.countCards.length - 1) {
+      state.countCorrectAnswer += countValue(state.countCards[state.countCardIndex]);
+      state.countCardIndex++;
+      render();
+    } else {
+      stopAutoFlip();
+      // Final check
+      state.countCorrectAnswer += countValue(state.countCards[state.countCardIndex]);
+      state.countAutoFlip = false;
+      render();
+    }
+  }, state.countSpeed);
+}
+
+function stopAutoFlip() {
+  if (state.countFlipTimer) {
+    clearInterval(state.countFlipTimer);
+    state.countFlipTimer = null;
+  }
+}
+
+function formatTime(seconds) {
+  let m = Math.floor(seconds / 60);
+  let s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function submitCountAnswer() {
+  let userAns = parseFloat(state.countUserAnswer);
+  if (isNaN(userAns)) return;
+
+  let correctAns;
+  let isCorrect;
+
+  if (state.countDrill === 'truecount') {
+    correctAns = state.countCorrectTC;
+    // Allow ±0.5 tolerance for true count
+    isCorrect = Math.abs(userAns - correctAns) <= 0.5;
+  } else {
+    correctAns = state.countCorrectAnswer;
+    isCorrect = userAns === correctAns;
+  }
+
+  state.countDrillTotal++;
+
+  if (isCorrect) {
+    state.countDrillScore++;
+    state.countDrillStreak++;
+    if (state.countDrillStreak > state.countDrillBestStreak) {
+      state.countDrillBestStreak = state.countDrillStreak;
+    }
+  } else {
+    state.countDrillStreak = 0;
+  }
+
+  let historyEntry = {
+    correct: isCorrect,
+    userAns: userAns,
+    realAns: correctAns,
+  };
+
+  if (state.countDrill === 'single') {
+    historyEntry.cards = [state.countCards[state.countCardIndex]];
+  } else if (state.countDrill === 'pairs') {
+    historyEntry.cards = state.countCards[state.countCardIndex];
+  }
+
+  state.countDrillHistory.push(historyEntry);
+  state.countUserAnswer = '';
+
+  // Advance to next question
+  if (state.countDrill === 'single') {
+    if (state.countCardIndex < state.countCards.length - 1) {
+      state.countCardIndex++;
+      state.countCorrectAnswer += countValue(state.countCards[state.countCardIndex]);
+    } else {
+      finishDrill();
+      return;
+    }
+  } else if (state.countDrill === 'pairs') {
+    if (state.countCardIndex < state.countCards.length - 1) {
+      state.countCardIndex++;
+      state.countCorrectAnswer += countValue(state.countCards[state.countCardIndex][0]) + countValue(state.countCards[state.countCardIndex][1]);
+    } else {
+      finishDrill();
+      return;
+    }
+  } else if (state.countDrill === 'speed' || state.countDrill === 'shoe') {
+    // Continue dealing
+    if (state.countDrill === 'shoe') {
+      // Deal next batch of ~10 cards
+      let batchEnd = Math.min(state.countCardIndex + 10, state.countCards.length);
+      for (let i = state.countCardIndex; i < batchEnd; i++) {
+        state.countCorrectAnswer += countValue(state.countCards[i]);
+      }
+      state.countCardIndex = batchEnd;
+      if (state.countCardIndex >= state.countCards.length) {
+        finishDrill();
+        return;
+      }
+    }
+  } else if (state.countDrill === 'truecount') {
+    if (state.countDrillTotal >= 20) {
+      finishDrill();
+      return;
+    }
+    generateTCQuestion();
+  }
+
+  render();
+  // Re-focus input
+  setTimeout(() => {
+    let inp = document.getElementById('countInput');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function submitSpeedAnswer() {
+  let userAns = parseFloat(state.countUserAnswer);
+  if (isNaN(userAns)) return;
+
+  let correctAns = state.countCorrectAnswer;
+  let isCorrect = userAns === correctAns;
+
+  state.countDrillTotal++;
+  if (isCorrect) {
+    state.countDrillScore++;
+    state.countDrillStreak++;
+    if (state.countDrillStreak > state.countDrillBestStreak) {
+      state.countDrillBestStreak = state.countDrillStreak;
+    }
+  } else {
+    state.countDrillStreak = 0;
+  }
+
+  state.countDrillHistory.push({
+    correct: isCorrect,
+    userAns: userAns,
+    realAns: correctAns,
+  });
+
+  state.countUserAnswer = '';
+
+  if (state.countCardIndex >= state.countCards.length - 1) {
+    finishDrill();
+    return;
+  }
+
+  // Reset and deal another batch
+  state.countCorrectAnswer = 0;
+  state.countCardIndex = 0;
+  state.countCards = shuffleArray(createShoe(1));
+  state.countAutoFlip = true;
+  startAutoFlip();
+  render();
+
+  setTimeout(() => {
+    let inp = document.getElementById('countInput');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function startShoeDrill() {
+  // Deal first batch of 10 cards
+  let batchEnd = Math.min(10, state.countCards.length);
+  for (let i = 0; i < batchEnd; i++) {
+    state.countCorrectAnswer += countValue(state.countCards[i]);
+  }
+  state.countCardIndex = batchEnd;
+  render();
+  setTimeout(() => {
+    let inp = document.getElementById('countInput');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function finishDrill() {
+  stopCountTimer();
+  stopAutoFlip();
+  state.countDrillPhase = 'results';
+  render();
+}
+
+function getDrillGrade() {
+  if (state.countDrillTotal === 0) return { letter: '—', cls: 'b' };
+  let pct = Math.round((state.countDrillScore / state.countDrillTotal) * 100);
+  if (pct >= 95) return { letter: 'A+', cls: 'a' };
+  if (pct >= 90) return { letter: 'A', cls: 'a' };
+  if (pct >= 80) return { letter: 'B', cls: 'b' };
+  if (pct >= 70) return { letter: 'C', cls: 'c' };
+  return { letter: 'D', cls: 'c' };
+}
+
+function renderCountCardWithBadge(card) {
+  let cv = countValue(card);
+  let badgeClass = cv > 0 ? 'plus' : cv < 0 ? 'minus' : 'zero';
+  let badgeText = cv > 0 ? '+1' : cv < 0 ? '−1' : '0';
+  let cardHtml = renderCard(card);
+  if (state.countShowValue) {
+    return `<div style="position:relative; display:inline-block;">${cardHtml}<div class="count-badge ${badgeClass}">${badgeText}</div></div>`;
+  }
+  return cardHtml;
+}
+
+function renderDrillContent() {
+  if (state.countDrillPhase === 'menu') {
+    return renderDrillMenu();
+  } else if (state.countDrillPhase === 'results') {
+    return renderDrillResults();
+  }
+
+  // ── RUNNING DRILL ──
+  let drill = state.countDrill;
+  let topBar = `
+    <div class="drill-stats-bar">
+      <div class="ds"><div class="ds-label">Score</div><div class="ds-value" style="color:var(--green)">${state.countDrillScore}/${state.countDrillTotal}</div></div>
+      <div class="ds"><div class="ds-label">Streak</div><div class="ds-value" style="color:var(--gold)">${state.countDrillStreak}</div></div>
+      <div class="ds"><div class="ds-label">Time</div><div class="ds-value" id="drillTimer">${formatTime(state.countTimer)}</div></div>
+    </div>
+    <div class="hi-lo-ref">
+      <span style="color:var(--green)">2-6 = +1</span>
+      <span>7-9 = 0</span>
+      <span style="color:var(--red)">10-A = −1</span>
+    </div>`;
+
+  let cardArea = '';
+  let inputArea = '';
+  let progressPct = 0;
+
+  if (drill === 'single') {
+    let card = state.countCards[state.countCardIndex];
+    progressPct = ((state.countCardIndex + 1) / state.countCards.length) * 100;
+    cardArea = `<div class="drill-card-display">${renderCountCardWithBadge(card)}</div>`;
+    inputArea = `
+      <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:4px;">Card ${state.countCardIndex + 1} of ${state.countCards.length} — What is the running count?</div>
+      <div class="drill-input-area">
+        <input type="number" id="countInput" class="drill-input" value="${state.countUserAnswer}"
+          oninput="state.countUserAnswer = this.value"
+          onkeydown="if(event.key==='Enter') submitCountAnswer()" autofocus />
+        <button class="btn btn-deal" onclick="submitCountAnswer()">Submit</button>
+      </div>`;
+    if (state.countDrillHistory.length > 0) {
+      let last = state.countDrillHistory[state.countDrillHistory.length - 1];
+      inputArea += `<div class="drill-result-flash ${last.correct ? 'correct' : 'wrong'}">${last.correct ? 'Correct!' : `Wrong — answer was ${last.realAns}`}</div>`;
+    }
+  } else if (drill === 'pairs') {
+    let pair = state.countCards[state.countCardIndex];
+    progressPct = ((state.countCardIndex + 1) / state.countCards.length) * 100;
+    cardArea = `<div class="drill-card-display">${renderCountCardWithBadge(pair[0])} ${renderCountCardWithBadge(pair[1])}</div>`;
+    let netVal = countValue(pair[0]) + countValue(pair[1]);
+    let cancelNote = netVal === 0 ? ' <span style="color:var(--gold)">(these cancel!)</span>' : '';
+    inputArea = `
+      <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:4px;">Pair ${state.countCardIndex + 1} of ${state.countCards.length} — Running count?${state.countShowValue ? cancelNote : ''}</div>
+      <div class="drill-input-area">
+        <input type="number" id="countInput" class="drill-input" value="${state.countUserAnswer}"
+          oninput="state.countUserAnswer = this.value"
+          onkeydown="if(event.key==='Enter') submitCountAnswer()" autofocus />
+        <button class="btn btn-deal" onclick="submitCountAnswer()">Submit</button>
+      </div>`;
+    if (state.countDrillHistory.length > 0) {
+      let last = state.countDrillHistory[state.countDrillHistory.length - 1];
+      inputArea += `<div class="drill-result-flash ${last.correct ? 'correct' : 'wrong'}">${last.correct ? 'Correct!' : `Wrong — answer was ${last.realAns}`}</div>`;
+    }
+  } else if (drill === 'speed') {
+    let card = state.countCards[state.countCardIndex];
+    progressPct = ((state.countCardIndex + 1) / state.countCards.length) * 100;
+    cardArea = `<div class="drill-card-display">${renderCard(card)}</div>`;
+
+    if (!state.countAutoFlip) {
+      // Cards done flipping — ask for count
+      inputArea = `
+        <div style="font-size:15px; font-weight:700; color:var(--gold); margin-bottom:8px;">All cards dealt! What's the running count?</div>
+        <div class="drill-input-area">
+          <input type="number" id="countInput" class="drill-input" value="${state.countUserAnswer}"
+            oninput="state.countUserAnswer = this.value"
+            onkeydown="if(event.key==='Enter') submitSpeedAnswer()" autofocus />
+          <button class="btn btn-deal" onclick="submitSpeedAnswer()">Submit</button>
+        </div>`;
+      if (state.countDrillHistory.length > 0) {
+        let last = state.countDrillHistory[state.countDrillHistory.length - 1];
+        inputArea += `<div class="drill-result-flash ${last.correct ? 'correct' : 'wrong'}">${last.correct ? 'Correct!' : `Wrong — answer was ${last.realAns}`}</div>`;
+      }
+    } else {
+      inputArea = `<div style="font-size:14px; color:rgba(255,255,255,0.5);">Watch the cards and keep count in your head...</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.3);">Speed: ${state.countSpeed}ms per card</div>`;
+    }
+  } else if (drill === 'truecount') {
+    progressPct = (state.countDrillTotal / 20) * 100;
+    cardArea = `
+      <div style="text-align:center;">
+        <div style="font-size:14px; color:rgba(255,255,255,0.5); margin-bottom:12px;">Convert running count to true count</div>
+        <div style="display:flex; gap:30px; justify-content:center; align-items:center;">
+          <div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:1px;">Running Count</div>
+            <div style="font-size:48px; font-weight:900; color:var(--gold);">${state.countCorrectAnswer >= 0 ? '+' : ''}${state.countCorrectAnswer}</div>
+          </div>
+          <div style="font-size:28px; color:rgba(255,255,255,0.2);">÷</div>
+          <div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:1px;">Decks Remaining</div>
+            <div style="font-size:48px; font-weight:900;">${state.countRemainingDecks}</div>
+          </div>
+          <div style="font-size:28px; color:rgba(255,255,255,0.2);">=</div>
+          <div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:1px;">True Count</div>
+            <div style="font-size:48px; font-weight:900; color:rgba(255,255,255,0.2);">?</div>
+          </div>
+        </div>
+      </div>`;
+    inputArea = `
+      <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:4px;">Question ${state.countDrillTotal + 1} of 20 — Enter the true count (round to nearest 0.5)</div>
+      <div class="drill-input-area">
+        <input type="number" step="0.5" id="countInput" class="drill-input" value="${state.countUserAnswer}"
+          oninput="state.countUserAnswer = this.value"
+          onkeydown="if(event.key==='Enter') submitCountAnswer()" autofocus />
+        <button class="btn btn-deal" onclick="submitCountAnswer()">Submit</button>
+      </div>`;
+    if (state.countDrillHistory.length > 0) {
+      let last = state.countDrillHistory[state.countDrillHistory.length - 1];
+      inputArea += `<div class="drill-result-flash ${last.correct ? 'correct' : 'wrong'}">${last.correct ? 'Correct!' : `Wrong — answer was ${last.realAns}`}</div>`;
+    }
+  } else if (drill === 'shoe') {
+    progressPct = (state.countCardIndex / state.countCards.length) * 100;
+    let batchStart = Math.max(0, state.countCardIndex - 10);
+    let batchCards = state.countCards.slice(batchStart, state.countCardIndex);
+    cardArea = `<div class="drill-card-display">${batchCards.map(c => renderCountCardWithBadge(c)).join('')}</div>`;
+    let decksRemaining = ((state.countCards.length - state.countCardIndex) / 52).toFixed(1);
+    inputArea = `
+      <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:4px;">
+        ${state.countCardIndex} of ${state.countCards.length} cards dealt (${decksRemaining} decks remaining) — Running count?
+      </div>
+      <div class="drill-input-area">
+        <input type="number" id="countInput" class="drill-input" value="${state.countUserAnswer}"
+          oninput="state.countUserAnswer = this.value"
+          onkeydown="if(event.key==='Enter') submitCountAnswer()" autofocus />
+        <button class="btn btn-deal" onclick="submitCountAnswer()">Submit</button>
+      </div>`;
+    if (state.countDrillHistory.length > 0) {
+      let last = state.countDrillHistory[state.countDrillHistory.length - 1];
+      inputArea += `<div class="drill-result-flash ${last.correct ? 'correct' : 'wrong'}">${last.correct ? 'Correct!' : `Wrong — answer was ${last.realAns}`}</div>`;
+    }
+
+    if (state.countCardIndex === 0) {
+      inputArea = `
+        <div style="font-size:14px; color:rgba(255,255,255,0.5);">Full 6-deck shoe — cards will be dealt in batches of 10.</div>
+        <button class="btn btn-deal" onclick="startShoeDrill()">Deal First Batch</button>`;
+    }
+  }
+
+  let toggleLabel = state.countShowValue ? 'on' : '';
+  let drillNames = { single: 'Single Card', pairs: 'Pair Counting', speed: 'Speed Run', truecount: 'True Count', shoe: 'Full Shoe' };
+
+  return `
+    <div class="drill-area">
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <div style="font-size:18px; font-weight:800;">${drillNames[drill]}</div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="toggle-container" style="margin:0;">
+            <div class="toggle ${toggleLabel}" onclick="state.countShowValue = !state.countShowValue; render()"></div>
+            <span style="font-size:12px;">Show values</span>
+          </div>
+          <button class="btn btn-secondary" style="padding:6px 14px; font-size:12px;" onclick="finishDrill()">End Drill</button>
+        </div>
+      </div>
+      ${topBar}
+      <div class="drill-progress-bar"><div class="drill-progress-fill" style="width:${progressPct}%"></div></div>
+      ${cardArea}
+      ${inputArea}
+    </div>`;
+}
+
+function renderDrillMenu() {
+  return `
+    <div class="drill-menu">
+      <h2>Card Counting Trainer</h2>
+      <div class="subtitle">Master the Hi-Lo counting system through progressive drills.<br>Start with single cards and work your way up to full shoe speed runs.</div>
+
+      <div class="drill-cards">
+        <div class="drill-card" onclick="startCountDrill('single')">
+          <div class="drill-icon">🃏</div>
+          <div class="drill-name">Single Card Drill</div>
+          <div class="drill-desc">One card flips at a time. Say the running count after each card. Builds your card-to-value recognition.</div>
+          <div class="drill-level beginner">Beginner</div>
+        </div>
+
+        <div class="drill-card" onclick="startCountDrill('pairs')">
+          <div class="drill-icon">🃏🃏</div>
+          <div class="drill-name">Pair Cancellation</div>
+          <div class="drill-desc">Two cards at a time. Learn to spot cancelling pairs instantly — the key trick pros use for speed.</div>
+          <div class="drill-level beginner">Beginner</div>
+        </div>
+
+        <div class="drill-card" onclick="startCountDrill('speed')">
+          <div class="drill-icon">⚡</div>
+          <div class="drill-name">Speed Run</div>
+          <div class="drill-desc">Cards auto-flip at casino pace. Track the count silently, then give your answer. Builds speed under pressure.</div>
+          <div class="drill-level intermediate">Intermediate</div>
+        </div>
+
+        <div class="drill-card" onclick="startCountDrill('truecount')">
+          <div class="drill-icon">➗</div>
+          <div class="drill-name">True Count Conversion</div>
+          <div class="drill-desc">Given a running count and decks remaining, calculate the true count. Essential for bet sizing decisions.</div>
+          <div class="drill-level intermediate">Intermediate</div>
+        </div>
+
+        <div class="drill-card" onclick="startCountDrill('shoe')" style="grid-column: 1 / -1;">
+          <div class="drill-icon">🎰</div>
+          <div class="drill-name">Full Shoe Simulation</div>
+          <div class="drill-desc">Count through a complete 6-deck shoe with periodic checkpoints. The ultimate test — simulates real casino conditions.</div>
+          <div class="drill-level advanced">Advanced</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+        <div class="toggle-container" style="margin:0;">
+          <div class="toggle ${state.countShowValue ? 'on' : ''}" onclick="state.countShowValue = !state.countShowValue; render()"></div>
+          <span style="font-size:13px;">Show Hi-Lo values on cards</span>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="exitCountMode();" style="margin-top:8px;">Back to Blackjack</button>
+    </div>`;
+}
+
+function renderDrillResults() {
+  let grade = getDrillGrade();
+  let pct = state.countDrillTotal > 0 ? Math.round((state.countDrillScore / state.countDrillTotal) * 100) : 0;
+  let avgTime = state.countDrillTotal > 0 ? (state.countTimer / state.countDrillTotal).toFixed(1) : '—';
+
+  let mistakeList = '';
+  let mistakes = state.countDrillHistory.filter(h => !h.correct).slice(0, 8);
+  if (mistakes.length > 0) {
+    mistakeList = `
+      <div style="margin-top:20px; text-align:left; max-width:400px; margin-left:auto; margin-right:auto;">
+        <div style="font-size:12px; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.35); margin-bottom:8px;">Mistakes to Review</div>
+        ${mistakes.map(m => `
+          <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:13px;">
+            <span>You said <strong style="color:var(--red)">${m.userAns}</strong></span>
+            <span>Correct: <strong style="color:var(--green)">${m.realAns}</strong></span>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  let tip = '';
+  if (pct >= 95) tip = 'Outstanding! You\'re counting at a professional level.';
+  else if (pct >= 80) tip = 'Solid foundation. Keep drilling to push accuracy above 95%.';
+  else if (pct >= 60) tip = 'Getting there! Focus on the cards you\'re mixing up and slow down.';
+  else tip = 'Keep practicing! Start with single cards until you\'ve memorized every value.';
+
+  return `
+    <div class="drill-results">
+      <h2>Drill Complete</h2>
+      <div class="grade ${grade.cls}">${grade.letter}</div>
+      <div style="font-size:14px; color:rgba(255,255,255,0.5); margin-bottom:8px;">${tip}</div>
+
+      <div class="drill-results-grid">
+        <div class="dr-stat">
+          <div class="dr-label">Accuracy</div>
+          <div class="dr-value" style="color:${pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--red)'}">${pct}%</div>
+        </div>
+        <div class="dr-stat">
+          <div class="dr-label">Time</div>
+          <div class="dr-value">${formatTime(state.countTimer)}</div>
+        </div>
+        <div class="dr-stat">
+          <div class="dr-label">Best Streak</div>
+          <div class="dr-value" style="color:var(--gold)">${state.countDrillBestStreak}</div>
+        </div>
+        <div class="dr-stat">
+          <div class="dr-label">Correct</div>
+          <div class="dr-value" style="color:var(--green)">${state.countDrillScore}</div>
+        </div>
+        <div class="dr-stat">
+          <div class="dr-label">Wrong</div>
+          <div class="dr-value" style="color:var(--red)">${state.countDrillTotal - state.countDrillScore}</div>
+        </div>
+        <div class="dr-stat">
+          <div class="dr-label">Avg / Question</div>
+          <div class="dr-value">${avgTime}s</div>
+        </div>
+      </div>
+
+      ${mistakeList}
+
+      <div style="display:flex; gap:12px; justify-content:center; margin-top:24px;">
+        <button class="btn btn-deal" onclick="startCountDrill('${state.countDrill}')">Retry Drill</button>
+        <button class="btn btn-secondary" onclick="state.countDrillPhase = 'menu'; render();">All Drills</button>
+        <button class="btn btn-secondary" onclick="exitCountMode()">Back to Blackjack</button>
       </div>
     </div>`;
 }
@@ -1810,6 +2744,27 @@ function resetAll() {
     resultClass: '',
     showSummary: false,
     showHistory: false,
+    countMode: false,
+    countDrill: null,
+    countDrillPhase: 'menu',
+    countCards: [],
+    countCardIndex: 0,
+    countUserAnswer: '',
+    countCorrectAnswer: 0,
+    countCorrectTC: 0,
+    countDrillScore: 0,
+    countDrillTotal: 0,
+    countDrillStreak: 0,
+    countDrillBestStreak: 0,
+    countTimer: 0,
+    countTimerInterval: null,
+    countSpeed: 1200,
+    countShowValue: state.countShowValue,
+    countDrillHistory: [],
+    countDecksForTC: 6,
+    countRemainingDecks: 4,
+    countAutoFlip: false,
+    countFlipTimer: null,
   };
   render();
 }
@@ -1834,6 +2789,38 @@ document.addEventListener('keydown', (e) => {
     placeBet(state.betInput);
   }
 });
+
+// ── STRATEGY TOOLTIP ──
+(function() {
+  let tip = document.getElementById('stratTooltip');
+  document.addEventListener('mouseover', function(e) {
+    let td = e.target.closest('.strategy-chart td[title]');
+    if (td) {
+      tip.textContent = td.getAttribute('title');
+      let rect = td.getBoundingClientRect();
+      let tipX = rect.left + rect.width / 2;
+      let tipY = rect.top - 8;
+      tip.style.left = tipX + 'px';
+      tip.style.top = tipY + 'px';
+      tip.style.transform = 'translate(-50%, -100%)';
+      // Keep within viewport
+      tip.classList.add('visible');
+      requestAnimationFrame(() => {
+        let tr = tip.getBoundingClientRect();
+        if (tr.left < 8) tip.style.left = (8 + tr.width / 2) + 'px';
+        if (tr.right > window.innerWidth - 8) tip.style.left = (window.innerWidth - 8 - tr.width / 2) + 'px';
+        if (tr.top < 8) {
+          tip.style.top = (rect.bottom + 8) + 'px';
+          tip.style.transform = 'translate(-50%, 0)';
+        }
+      });
+    }
+  });
+  document.addEventListener('mouseout', function(e) {
+    let td = e.target.closest('.strategy-chart td[title]');
+    if (td) tip.classList.remove('visible');
+  });
+})();
 
 // ── INIT ──
 render();
