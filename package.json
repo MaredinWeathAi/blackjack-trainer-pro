@@ -1,0 +1,12 @@
+{
+  "name": "blackjack-trainer-pro",
+  "version": "1.0.0",
+  "description": "Professional blackjack training app with basic strategy, card counting, and bet sizing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

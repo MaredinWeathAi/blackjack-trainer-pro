@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Trainer Pro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --felt: #0a5c2f;
+    --felt-dark: #064023;
+    --felt-light: #0d7a3e;
+    --gold: #d4a843;
+    --gold-light: #e8c96a;
+    --red: #e74c3c;
+    --green: #2ecc71;
+    --blue: #3498db;
+    --card-white: #f8f6f0;
+    --card-shadow: rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #0a0a0f;
+    color: #e8e8e8;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    min-height: 100vh;
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar-left {
+    background: #111118;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 900; color: #1a1a2e;
+  }
+
+  .logo-text { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
+  .logo-sub { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 500; }
+
+  .stat-group {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .stat-group-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+
+  .stat-label { font-size: 13px; color: rgba(255,255,255,0.55); }
+  .stat-value { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat-value.positive { color: var(--green); }
+  .stat-value.negative { color: var(--red); }
+  .stat-value.gold { color: var(--gold); }
+  .stat-value.blue { color: var(--blue); }
+
+  .count-display {
+    background: linear-gradient(135deg, rgba(212,168,67,0.1), rgba(212,168,67,0.03));
+    border: 1px solid rgba(212,168,67,0.2);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .count-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--gold); font-weight: 600; margin-bottom: 6px; }
+  .count-big { font-size: 36px; font-weight: 900; color: var(--gold-light); line-height: 1; }
+  .count-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+  /* ── MAIN TABLE ── */
+  .main-area {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .table-surface {
+    flex: 1;
+    background: radial-gradient(ellipse at 50% 60%, var(--felt-light), var(--felt), var(--felt-dark));
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    min-height: 500px;
+  }
+
+  .table-surface::before {
+    content: '';
+    position: absolute;
+    inset: 20px;
+    border: 2px solid rgba(212,168,67,0.25);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    pointer-events: none;
+  }
+
+  .table-surface::after {
+    content: 'BLACKJACK PAYS 3 TO 2';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: rgba(212,168,67,0.15);
+    pointer-events: none;
+  }
+
+  /* ── CARD AREAS ── */
+  .dealer-area, .player-area {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dealer-area { margin-bottom: 60px; }
+  .player-area { margin-top: 20px; }
+
+  .hand-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .hand-total {
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .hand-total.blackjack { color: var(--gold-light); }
+  .hand-total.bust { color: var(--red); }
+
+  .cards-row {
+    display: flex;
+    gap: 8px;
+    perspective: 800px;
+  }
+
+  /* ── SPLIT HANDS ── */
+  .split-container {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .split-hand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 14px;
+    transition: all 0.3s;
+  }
+
+  .split-hand.active-hand {
+    background: rgba(212,168,67,0.1);
+    box-shadow: 0 0 0 2px rgba(212,168,67,0.3);
+  }
+
+  /* ── CARDS ── */
+  .card {
+    width: 80px;
+    height: 112px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 2px 4px 12px var(--card-shadow);
+    transition: transform 0.3s ease;
+    animation: dealCard 0.4s ease-out;
+    transform-style: preserve-3d;
+  }
+
+  .card:hover { transform: translateY(-4px); }
+
+  @keyframes dealCard {
+    from { opacity: 0; transform: translateY(-40px) scale(0.8) rotateY(90deg); }
+    to { opacity: 1; transform: translateY(0) scale(1) rotateY(0); }
+  }
+
+  .card-front {
+    width: 100%;
+    height: 100%;
+    background: var(--card-white);
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    position: relative;
+  }
+
+  .card-corner {
+    position: absolute;
+    top: 5px;
+    left: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .card-corner-br {
+    position: absolute;
+    bottom: 5px;
+    right: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+    transform: rotate(180deg);
+  }
+
+  .card-rank {
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .card-suit-small { font-size: 12px; }
+  .card-suit-big { font-size: 32px; }
+
+  .card.red .card-rank, .card.red .card-suit-small, .card.red .card-suit-big { color: #c0392b; }
+  .card.black .card-rank, .card.black .card-suit-small, .card.black .card-suit-big { color: #1a1a2e; }
+
+  .card-back {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #c0392b, #96281b);
+    border-radius: 8px;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-back::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(255,255,255,0.08) 4px,
+      rgba(255,255,255,0.08) 8px
+    );
+  }
+
+  .card-back-logo {
+    font-size: 24px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.4);
+    z-index: 1;
+  }
+
+  /* ── RESULT OVERLAY ── */
+  .result-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    padding: 12px 32px;
+    border-radius: 16px;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+  }
+
+  .result-banner.win { background: rgba(46,204,113,0.2); border: 2px solid var(--green); color: var(--green); }
+  .result-banner.lose { background: rgba(231,76,60,0.2); border: 2px solid var(--red); color: var(--red); }
+  .result-banner.push { background: rgba(52,152,219,0.2); border: 2px solid var(--blue); color: var(--blue); }
+  .result-banner.blackjack { background: rgba(212,168,67,0.2); border: 2px solid var(--gold); color: var(--gold-light); }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+
+  /* ── CONTROLS ── */
+  .controls-bar {
+    background: #111118;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn-hit { background: linear-gradient(135deg, #2ecc71, #27ae60); color: #fff; }
+  .btn-hit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(46,204,113,0.4); }
+
+  .btn-stand { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; }
+  .btn-stand:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(231,76,60,0.4); }
+
+  .btn-double { background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; }
+  .btn-double:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(52,152,219,0.4); }
+
+  .btn-split { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; }
+  .btn-split:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(155,89,182,0.4); }
+
+  .btn-deal { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #1a1a2e; padding: 12px 32px; font-size: 15px; }
+  .btn-deal:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(212,168,67,0.5); }
+
+  .btn-secondary { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.1); }
+  .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.12); }
+
+  /* ── BET INPUT ── */
+  .bet-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    z-index: 5;
+  }
+
+  .bet-chips {
+    display: flex;
+    gap: 10px;
+  }
+
+  .chip {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 3px dashed rgba(255,255,255,0.3);
+    position: relative;
+  }
+
+  .chip:hover { transform: translateY(-4px) scale(1.1); }
+  .chip.selected { transform: translateY(-6px) scale(1.15); box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+
+  .chip-5 { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; border-color: rgba(255,200,200,0.4); }
+  .chip-25 { background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border-color: rgba(200,255,200,0.4); }
+  .chip-100 { background: linear-gradient(135deg, #1a1a2e, #2c3e50); color: #fff; border-color: rgba(200,200,255,0.4); }
+  .chip-500 { background: linear-gradient(135deg, #8e44ad, #6c3483); color: #fff; border-color: rgba(255,200,255,0.4); }
+
+  .bet-display {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--gold-light);
+  }
+
+  .bet-display span { font-size: 16px; color: rgba(255,255,255,0.4); }
+
+  .bet-buttons { display: flex; gap: 8px; }
+
+  /* ── RIGHT SIDEBAR ── */
+  .sidebar-right {
+    background: #111118;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  .feedback-panel {
+    border-radius: 14px;
+    padding: 16px;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .feedback-correct { background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.2); }
+  .feedback-incorrect { background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.2); }
+  .feedback-info { background: rgba(52,152,219,0.08); border: 1px solid rgba(52,152,219,0.2); }
+  .feedback-tip { background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.2); }
+
+  .feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .feedback-correct .feedback-header { color: var(--green); }
+  .feedback-incorrect .feedback-header { color: var(--red); }
+  .feedback-info .feedback-header { color: var(--blue); }
+  .feedback-tip .feedback-header { color: var(--gold); }
+
+  .feedback-body { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.7); }
+  .feedback-body strong { color: #fff; font-weight: 600; }
+
+  .section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+    padding: 8px 0 4px;
+  }
+
+  .strategy-chart {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 12px;
+  }
+
+  .strategy-chart table { width: 100%; border-collapse: collapse; }
+  .strategy-chart th, .strategy-chart td {
+    padding: 3px 2px;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .strategy-chart th { color: rgba(255,255,255,0.4); }
+  .strategy-chart td { border-radius: 3px; }
+  .strategy-chart .s-h { background: rgba(46,204,113,0.2); color: var(--green); }
+  .strategy-chart .s-s { background: rgba(231,76,60,0.2); color: var(--red); }
+  .strategy-chart .s-d { background: rgba(52,152,219,0.2); color: var(--blue); }
+  .strategy-chart .s-p { background: rgba(155,89,182,0.2); color: #bb86fc; }
+  .strategy-chart .s-hl { outline: 2px solid #fff; outline-offset: -1px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.3s;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: #1a1a24;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 520px;
+    width: 90%;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .modal h2 { font-size: 22px; font-weight: 800; margin-bottom: 20px; text-align: center; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .summary-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+  .summary-card-value { font-size: 24px; font-weight: 800; }
+
+  .mistakes-list { margin: 16px 0; }
+  .mistake-item {
+    background: rgba(231,76,60,0.06);
+    border: 1px solid rgba(231,76,60,0.15);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .mistake-item strong { color: var(--red); }
+
+  .shoe-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .shoe-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--gold), var(--red));
+    transition: width 0.3s;
+    border-radius: 3px;
+  }
+
+  /* ── WELCOME SCREEN ── */
+  .welcome-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    text-align: center;
+    gap: 24px;
+  }
+
+  .welcome-screen h1 {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .welcome-screen p { color: rgba(255,255,255,0.5); font-size: 15px; max-width: 400px; line-height: 1.6; }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+  }
+
+  .settings-row select {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+  }
+
+  .toggle {
+    width: 44px; height: 24px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle.on { background: var(--green); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+  }
+
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* Keyboard hints */
+  .key-hints {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .key-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+  }
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 6px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.6);
+  }
+
+  /* ── MOBILE STATS BAR ── */
+  .mobile-stats {
+    display: none;
+    background: #111118;
+    padding: 10px 16px;
+    gap: 8px;
+    overflow-x: auto;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+    gap: 2px;
+  }
+
+  .mobile-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.35); white-space: nowrap; }
+  .mobile-stat-value { font-size: 14px; font-weight: 800; white-space: nowrap; }
+
+  .mobile-feedback {
+    display: none;
+    padding: 8px 16px;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+
+  .mobile-feedback .feedback-panel {
+    padding: 8px 12px;
+    margin-bottom: 4px;
+  }
+
+  .mobile-feedback .feedback-header { font-size: 11px; margin-bottom: 4px; }
+  .mobile-feedback .feedback-body { font-size: 11px; line-height: 1.4; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; }
+    .sidebar-left, .sidebar-right { display: none; }
+    .mobile-stats { display: flex; }
+    .mobile-feedback { display: block; }
+  }
+
+  @media (max-width: 600px) {
+    .table-surface { padding: 16px 10px; min-height: 350px; }
+    .table-surface::before { inset: 10px; }
+    .table-surface::after { font-size: 10px; letter-spacing: 2px; }
+
+    .card { width: 58px; height: 82px; }
+    .card-rank { font-size: 11px; }
+    .card-suit-small { font-size: 9px; }
+    .card-suit-big { font-size: 22px; }
+    .card-corner { top: 3px; left: 5px; }
+    .card-corner-br { bottom: 3px; right: 5px; }
+
+    .cards-row { gap: 4px; }
+    .dealer-area { margin-bottom: 30px; }
+    .player-area { margin-top: 10px; }
+    .hand-total { font-size: 13px; padding: 3px 10px; }
+    .hand-label { font-size: 10px; letter-spacing: 1.5px; }
+
+    .controls-bar { padding: 12px 10px; gap: 6px; }
+    .btn { padding: 10px 16px; font-size: 13px; border-radius: 10px; }
+    .btn-deal { padding: 12px 28px; }
+
+    .bet-chips { gap: 6px; }
+    .chip { width: 46px; height: 46px; font-size: 11px; border-width: 2px; }
+    .bet-display { font-size: 22px; }
+
+    .key-hints { display: none; }
+
+    .welcome-screen h1 { font-size: 28px; }
+    .welcome-screen p { font-size: 13px; }
+
+    .result-banner { font-size: 18px; padding: 10px 24px; }
+
+    .split-container { gap: 16px; }
+    .split-hand { padding: 6px; }
+  }
+
+  /* Safe area for notched phones */
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .mobile-stats { padding-top: calc(10px + env(safe-area-inset-top)); }
+    .controls-bar { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// BLACKJACK TRAINER PRO — COMPLETE ENGINE
+// ═══════════════════════════════════════════════
+
+const SUITS = ['♠','♥','♦','♣'];
+const RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const SUIT_COLORS = { '♠':'black', '♥':'red', '♦':'red', '♣':'black' };
+
+// ── STATE ──
+let state = {
+  phase: 'welcome', // welcome | betting | playing | dealer_turn | result | summary
+  bankroll: 10000,
+  startingBankroll: 10000,
+  bet: 0,
+  betInput: 100,
+  deck: [],
+  decksCount: 6,
+  runningCount: 0,
+  cardsDealt: 0,
+  handsPlayed: 0,
+  correctDecisions: 0,
+  incorrectDecisions: 0,
+  correctBets: 0,
+  incorrectBets: 0,
+  playerHands: [[]],    // array of hands for splits
+  activeHandIndex: 0,
+  handBets: [],
+  handResults: [],
+  dealerHand: [],
+  dealerRevealed: false,
+  feedback: [],
+  mistakes: [],
+  showCount: true,
+  showStrategy: true,
+  insuranceOffered: false,
+  insuranceDeclined: false,
+  resultText: '',
+  resultClass: '',
+  showSummary: false,
+};
+
+// ── DECK ──
+function createShoe(numDecks) {
+  let shoe = [];
+  for (let d = 0; d < numDecks; d++) {
+    for (let s of SUITS) {
+      for (let r of RANKS) {
+        shoe.push({ rank: r, suit: s });
+      }
+    }
+  }
+  return shuffleArray(shoe);
+}
+
+function shuffleArray(arr) {
+  let a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function cardValue(card) {
+  if (['J','Q','K'].includes(card.rank)) return 10;
+  if (card.rank === 'A') return 11;
+  return parseInt(card.rank);
+}
+
+function handTotal(hand) {
+  let total = 0, aces = 0;
+  for (let c of hand) {
+    total += cardValue(c);
+    if (c.rank === 'A') aces++;
+  }
+  while (total > 21 && aces > 0) { total -= 10; aces--; }
+  return total;
+}
+
+function isSoft(hand) {
+  let total = 0, aces = 0;
+  for (let c of hand) {
+    total += cardValue(c);
+    if (c.rank === 'A') aces++;
+  }
+  while (total > 21 && aces > 0) { total -= 10; aces--; }
+  return aces > 0 && total <= 21;
+}
+
+function isPair(hand) {
+  return hand.length === 2 && cardValue(hand[0]) === cardValue(hand[1]);
+}
+
+function isBlackjack(hand) {
+  return hand.length === 2 && handTotal(hand) === 21;
+}
+
+function countValue(card) {
+  let v = cardValue(card);
+  if (v >= 2 && v <= 6) return 1;
+  if (v >= 10 || card.rank === 'A') return -1;
+  return 0;
+}
+
+function getTrueCount() {
+  let remaining = state.deck.length;
+  let decksRemaining = Math.max(remaining / 52, 0.5);
+  return state.runningCount / decksRemaining;
+}
+
+function dealCard() {
+  if (state.deck.length < 20) {
+    state.deck = createShoe(state.decksCount);
+    state.runningCount = 0;
+    state.cardsDealt = 0;
+    addFeedback('info', 'Shuffle', 'New shoe shuffled. Running count reset to 0.');
+  }
+  let card = state.deck.pop();
+  state.cardsDealt++;
+  state.runningCount += countValue(card);
+  return card;
+}
+
+// ── BASIC STRATEGY ──
+function getOptimalPlay(hand, dealerUpcard, canSplit, canDouble) {
+  let total = handTotal(hand);
+  let soft = isSoft(hand);
+  let pair = isPair(hand) && canSplit;
+  let dv = cardValue(dealerUpcard);
+
+  // Pairs
+  if (pair) {
+    let pv = cardValue(hand[0]);
+    if (pv === 11 || pv === 8) return 'split';
+    if (pv === 10) return 'stand';
+    if (pv === 9) return ([2,3,4,5,6,8,9].includes(dv)) ? 'split' : 'stand';
+    if (pv === 7) return (dv >= 2 && dv <= 7) ? 'split' : 'hit';
+    if (pv === 6) return (dv >= 2 && dv <= 6) ? 'split' : 'hit';
+    if (pv === 5) return (dv >= 2 && dv <= 9 && canDouble) ? 'double' : 'hit';
+    if (pv === 4) return (dv >= 5 && dv <= 6) ? 'split' : 'hit';
+    if (pv === 3 || pv === 2) return (dv >= 4 && dv <= 7) ? 'split' : 'hit';
+  }
+
+  // Soft hands
+  if (soft) {
+    if (total >= 19) return 'stand';
+    if (total === 18) {
+      if (dv >= 3 && dv <= 6 && canDouble) return 'double';
+      if ([2,7,8].includes(dv)) return 'stand';
+      return 'hit';
+    }
+    if (total === 17) {
+      if (dv >= 3 && dv <= 6 && canDouble) return 'double';
+      return 'hit';
+    }
+    if (total <= 16 && total >= 13) {
+      if (dv >= 4 && dv <= 6 && canDouble) return 'double';
+      return 'hit';
+    }
+    return 'hit';
+  }
+
+  // Hard hands
+  if (total >= 17) return 'stand';
+  if (total >= 13 && total <= 16) return (dv >= 2 && dv <= 6) ? 'stand' : 'hit';
+  if (total === 12) return (dv >= 4 && dv <= 6) ? 'stand' : 'hit';
+  if (total === 11) return canDouble ? 'double' : 'hit';
+  if (total === 10) return (dv >= 2 && dv <= 9 && canDouble) ? 'double' : 'hit';
+  if (total === 9) return (dv >= 3 && dv <= 6 && canDouble) ? 'double' : 'hit';
+  return 'hit';
+}
+
+function getOptimalBet() {
+  let tc = getTrueCount();
+  let unit = Math.max(Math.round(state.bankroll * 0.01), 5);
+  if (tc <= 1) return { min: unit, max: unit, label: '1 unit' };
+  if (tc <= 2) return { min: unit * 2, max: unit * 4, label: '2-4 units' };
+  if (tc <= 3) return { min: unit * 4, max: unit * 8, label: '4-8 units' };
+  return { min: unit * 8, max: unit * 12, label: '8-12 units' };
+}
+
+// ── FEEDBACK ──
+function addFeedback(type, title, body) {
+  state.feedback.unshift({ type, title, body, id: Date.now() + Math.random() });
+  if (state.feedback.length > 20) state.feedback.pop();
+}
+
+// ── ACTIONS ──
+function startGame() {
+  state.phase = 'betting';
+  state.deck = createShoe(state.decksCount);
+  state.runningCount = 0;
+  state.cardsDealt = 0;
+  state.startingBankroll = state.bankroll;
+  render();
+}
+
+function placeBet(amount) {
+  if (amount > state.bankroll || amount < 5) return;
+  state.bet = amount;
+
+  let optimal = getOptimalBet();
+  let tc = getTrueCount();
+  let isOptimal = amount >= optimal.min * 0.7 && amount <= optimal.max * 1.3;
+
+  if (isOptimal) {
+    state.correctBets++;
+    addFeedback('correct', 'Good Bet', `Bet $${amount} with true count ${tc.toFixed(1)}. Optimal range: ${optimal.label} ($${optimal.min}–$${optimal.max}).`);
+  } else {
+    state.incorrectBets++;
+    let reason = amount < optimal.min
+      ? `You're under-betting. The count is in your favor — bet more aggressively.`
+      : `You're over-betting relative to the count. Protect your bankroll.`;
+    addFeedback('incorrect', 'Suboptimal Bet', `Bet $${amount}, but optimal is ${optimal.label} ($${optimal.min}–$${optimal.max}) at TC ${tc.toFixed(1)}. ${reason}`);
+  }
+
+  // Deal
+  state.playerHands = [[]];
+  state.activeHandIndex = 0;
+  state.handBets = [amount];
+  state.handResults = [];
+  state.dealerHand = [];
+  state.dealerRevealed = false;
+  state.resultText = '';
+  state.resultClass = '';
+  state.insuranceOffered = false;
+  state.insuranceDeclined = false;
+
+  state.playerHands[0].push(dealCard());
+  state.dealerHand.push(dealCard());
+  state.playerHands[0].push(dealCard());
+  state.dealerHand.push(dealCard());
+
+  // Check for naturals
+  if (isBlackjack(state.playerHands[0]) && isBlackjack(state.dealerHand)) {
+    state.dealerRevealed = true;
+    state.phase = 'result';
+    state.resultText = 'PUSH';
+    state.resultClass = 'push';
+    state.handResults = ['push'];
+    state.handsPlayed++;
+    addFeedback('info', 'Push', 'Both player and dealer have Blackjack.');
+  } else if (isBlackjack(state.playerHands[0])) {
+    state.dealerRevealed = true;
+    state.phase = 'result';
+    state.resultText = 'BLACKJACK!';
+    state.resultClass = 'blackjack';
+    state.handResults = ['blackjack'];
+    state.bankroll += Math.round(amount * 1.5);
+    state.handsPlayed++;
+    addFeedback('tip', 'Blackjack!', `Natural 21 pays 3:2. You win $${Math.round(amount * 1.5)}.`);
+  } else if (isBlackjack(state.dealerHand)) {
+    state.dealerRevealed = true;
+    state.phase = 'result';
+    state.resultText = 'DEALER BLACKJACK';
+    state.resultClass = 'lose';
+    state.handResults = ['lose'];
+    state.bankroll -= amount;
+    state.handsPlayed++;
+    addFeedback('info', 'Dealer Blackjack', 'Dealer has a natural 21. You lose your bet.');
+  } else {
+    state.phase = 'playing';
+  }
+
+  render();
+}
+
+function playerAction(action) {
+  if (state.phase !== 'playing') return;
+
+  let hand = state.playerHands[state.activeHandIndex];
+  let dealerUp = state.dealerHand[0];
+  let canSplit = isPair(hand) && state.playerHands.length < 4 && hand.length === 2;
+  let canDouble = hand.length === 2;
+  let optimal = getOptimalPlay(hand, dealerUp, canSplit, canDouble);
+
+  // Evaluate decision
+  let isCorrect = action === optimal;
+  // Allow hit when double is optimal but not available (> 2 cards)
+  if (optimal === 'double' && !canDouble && action === 'hit') isCorrect = true;
+  if (optimal === 'split' && !canSplit && (action === 'hit' || action === 'stand')) {
+    // recalculate without split option
+    let altOptimal = getOptimalPlay(hand, dealerUp, false, canDouble);
+    isCorrect = action === altOptimal;
+  }
+
+  let handDesc = isSoft(hand) ? `Soft ${handTotal(hand)}` : (isPair(hand) ? `Pair of ${hand[0].rank}s` : `Hard ${handTotal(hand)}`);
+
+  if (isCorrect) {
+    state.correctDecisions++;
+    addFeedback('correct', 'Correct!', `${action.toUpperCase()} with ${handDesc} vs dealer ${dealerUp.rank} is optimal.`);
+  } else {
+    state.incorrectDecisions++;
+    let explanation = getStrategyExplanation(hand, dealerUp, optimal);
+    addFeedback('incorrect', 'Incorrect', `You chose ${action.toUpperCase()}, but optimal is ${optimal.toUpperCase()} with ${handDesc} vs dealer ${dealerUp.rank}. ${explanation}`);
+    state.mistakes.push({ hand: handDesc, dealer: dealerUp.rank, chose: action, optimal: optimal });
+  }
+
+  // Execute action
+  if (action === 'hit') {
+    hand.push(dealCard());
+    if (handTotal(hand) > 21) {
+      advanceHand();
+    } else if (handTotal(hand) === 21) {
+      advanceHand();
+    }
+  } else if (action === 'stand') {
+    advanceHand();
+  } else if (action === 'double') {
+    state.handBets[state.activeHandIndex] *= 2;
+    hand.push(dealCard());
+    advanceHand();
+  } else if (action === 'split') {
+    let newHand = [hand.pop()];
+    hand.push(dealCard());
+    newHand.push(dealCard());
+    state.playerHands.splice(state.activeHandIndex + 1, 0, newHand);
+    state.handBets.splice(state.activeHandIndex + 1, 0, state.handBets[state.activeHandIndex]);
+    // If split aces, only one card each
+    if (hand[0].rank === 'A') {
+      advanceHand();
+      return render(); // will call advanceHand for second hand too
+    }
+  }
+
+  render();
+}
+
+function advanceHand() {
+  if (state.activeHandIndex < state.playerHands.length - 1) {
+    state.activeHandIndex++;
+    // If split aces, auto-stand
+    if (state.playerHands[state.activeHandIndex].length === 2 &&
+        state.playerHands[state.activeHandIndex][0].rank === 'A') {
+      advanceHand();
+    }
+  } else {
+    dealerPlay();
+  }
+}
+
+function dealerPlay() {
+  state.phase = 'dealer_turn';
+  state.dealerRevealed = true;
+
+  // Update count for hole card
+  // (hole card was already counted when dealt, so no update needed)
+
+  let allBusted = state.playerHands.every(h => handTotal(h) > 21);
+
+  if (!allBusted) {
+    while (handTotal(state.dealerHand) < 17) {
+      state.dealerHand.push(dealCard());
+    }
+  }
+
+  resolveHands();
+}
+
+function resolveHands() {
+  state.phase = 'result';
+  let dealerTotal = handTotal(state.dealerHand);
+  let dealerBust = dealerTotal > 21;
+  let totalWinLoss = 0;
+  let results = [];
+
+  for (let i = 0; i < state.playerHands.length; i++) {
+    let pTotal = handTotal(state.playerHands[i]);
+    let bet = state.handBets[i];
+
+    if (pTotal > 21) {
+      totalWinLoss -= bet;
+      results.push('lose');
+    } else if (dealerBust) {
+      totalWinLoss += bet;
+      results.push('win');
+    } else if (pTotal > dealerTotal) {
+      totalWinLoss += bet;
+      results.push('win');
+    } else if (pTotal < dealerTotal) {
+      totalWinLoss -= bet;
+      results.push('lose');
+    } else {
+      results.push('push');
+    }
+  }
+
+  state.bankroll += totalWinLoss;
+  state.handResults = results;
+  state.handsPlayed++;
+
+  if (totalWinLoss > 0) {
+    state.resultText = `WIN +$${totalWinLoss}`;
+    state.resultClass = 'win';
+  } else if (totalWinLoss < 0) {
+    state.resultText = `LOSE -$${Math.abs(totalWinLoss)}`;
+    state.resultClass = 'lose';
+  } else {
+    state.resultText = 'PUSH';
+    state.resultClass = 'push';
+  }
+
+  render();
+}
+
+function nextHand() {
+  if (state.bankroll < 5) {
+    state.showSummary = true;
+    addFeedback('info', 'Bankrupt', 'You\'ve run out of chips. Review your session summary.');
+    render();
+    return;
+  }
+  state.phase = 'betting';
+  state.betInput = Math.min(state.bet || 100, state.bankroll);
+  render();
+}
+
+function endSession() {
+  state.showSummary = true;
+  render();
+}
+
+function getStrategyExplanation(hand, dealerUp, optimal) {
+  let total = handTotal(hand);
+  let dv = cardValue(dealerUp);
+  let soft = isSoft(hand);
+
+  if (optimal === 'stand' && dv >= 2 && dv <= 6) {
+    return `Dealer shows a bust card (${dealerUp.rank}). Let them risk busting instead of you.`;
+  }
+  if (optimal === 'hit' && dv >= 7) {
+    return `Dealer likely has 17+ already. You need to improve your hand to win.`;
+  }
+  if (optimal === 'double') {
+    return `This is a high-EV doubling situation. You have strong odds of winning with one more card.`;
+  }
+  if (optimal === 'split') {
+    return `Splitting here creates two advantageous starting hands against the dealer's upcard.`;
+  }
+  if (optimal === 'stand' && total >= 17) {
+    return `With ${total}, the risk of busting outweighs the potential benefit of hitting.`;
+  }
+  return `Basic strategy maximizes your expected value over thousands of hands.`;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+
+function renderCard(card, hidden = false) {
+  if (hidden) {
+    return `<div class="card"><div class="card-back"><span class="card-back-logo">BJ</span></div></div>`;
+  }
+  let color = SUIT_COLORS[card.suit];
+  return `
+    <div class="card ${color}">
+      <div class="card-front">
+        <div class="card-corner"><span class="card-rank">${card.rank}</span><span class="card-suit-small">${card.suit}</span></div>
+        <span class="card-suit-big">${card.suit}</span>
+        <div class="card-corner-br"><span class="card-rank">${card.rank}</span><span class="card-suit-small">${card.suit}</span></div>
+      </div>
+    </div>`;
+}
+
+function render() {
+  let app = document.getElementById('app');
+  let tc = getTrueCount();
+  let accuracy = state.correctDecisions + state.incorrectDecisions > 0
+    ? Math.round((state.correctDecisions / (state.correctDecisions + state.incorrectDecisions)) * 100)
+    : 0;
+  let betAccuracy = state.correctBets + state.incorrectBets > 0
+    ? Math.round((state.correctBets / (state.correctBets + state.incorrectBets)) * 100)
+    : 0;
+  let shoeProgress = (state.cardsDealt / (state.decksCount * 52)) * 100;
+  let pnl = state.bankroll - state.startingBankroll;
+
+  // ── LEFT SIDEBAR ──
+  let leftSidebar = `
+    <div class="sidebar-left">
+      <div class="logo">
+        <div class="logo-icon">21</div>
+        <div>
+          <div class="logo-text">Blackjack Trainer</div>
+          <div class="logo-sub">Pro Edition</div>
+        </div>
+      </div>
+
+      <div class="stat-group">
+        <div class="stat-group-title">Bankroll</div>
+        <div class="stat-row">
+          <span class="stat-label">Balance</span>
+          <span class="stat-value gold">$${state.bankroll.toLocaleString()}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">P&L</span>
+          <span class="stat-value ${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}$${pnl.toLocaleString()}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Current Bet</span>
+          <span class="stat-value">${state.bet > 0 ? '$' + state.bet : '—'}</span>
+        </div>
+      </div>
+
+      ${state.showCount ? `
+      <div class="count-display">
+        <div class="count-label">True Count</div>
+        <div class="count-big">${tc >= 0 ? '+' : ''}${tc.toFixed(1)}</div>
+        <div class="count-sub">Running: ${state.runningCount >= 0 ? '+' : ''}${state.runningCount}</div>
+      </div>` : ''}
+
+      <div class="stat-group">
+        <div class="stat-group-title">Performance</div>
+        <div class="stat-row">
+          <span class="stat-label">Hands Played</span>
+          <span class="stat-value">${state.handsPlayed}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Play Accuracy</span>
+          <span class="stat-value ${accuracy >= 80 ? 'positive' : accuracy >= 60 ? 'gold' : 'negative'}">${accuracy}%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Bet Accuracy</span>
+          <span class="stat-value ${betAccuracy >= 80 ? 'positive' : betAccuracy >= 60 ? 'gold' : 'negative'}">${betAccuracy}%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Correct / Wrong</span>
+          <span class="stat-value"><span class="positive">${state.correctDecisions}</span> / <span class="negative">${state.incorrectDecisions}</span></span>
+        </div>
+      </div>
+
+      <div class="stat-group">
+        <div class="stat-group-title">Shoe Progress</div>
+        <div class="stat-row">
+          <span class="stat-label">Cards Dealt</span>
+          <span class="stat-value">${state.cardsDealt} / ${state.decksCount * 52}</span>
+        </div>
+        <div class="shoe-progress"><div class="shoe-progress-bar" style="width:${shoeProgress}%"></div></div>
+      </div>
+
+      <div style="margin-top:auto">
+        <button class="btn btn-secondary" style="width:100%" onclick="endSession()">End Session</button>
+      </div>
+    </div>`;
+
+  // ── MAIN AREA ──
+  let mainContent = '';
+
+  if (state.phase === 'welcome') {
+    mainContent = `
+      <div class="table-surface">
+        <div class="welcome-screen">
+          <h1>Blackjack Trainer Pro</h1>
+          <p>Master basic strategy, card counting (Hi-Lo), and optimal bet sizing through deliberate practice. Every decision is evaluated in real-time.</p>
+          <div class="settings-row">
+            <span>Decks:</span>
+            <select onchange="state.decksCount = parseInt(this.value)">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="6" selected>6</option>
+              <option value="8">8</option>
+            </select>
+          </div>
+          <div class="toggle-container">
+            <div class="toggle ${state.showCount ? 'on' : ''}" onclick="state.showCount = !state.showCount; render()"></div>
+            <span>Show Count (training wheels)</span>
+          </div>
+          <div class="toggle-container">
+            <div class="toggle ${state.showStrategy ? 'on' : ''}" onclick="state.showStrategy = !state.showStrategy; render()"></div>
+            <span>Show Strategy Chart</span>
+          </div>
+          <button class="btn btn-deal" onclick="startGame()">Start Training</button>
+        </div>
+      </div>`;
+  } else if (state.phase === 'betting') {
+    let optBet = getOptimalBet();
+    mainContent = `
+      <div class="table-surface">
+        <div class="bet-area">
+          <div class="hand-label">Place Your Bet</div>
+          <div class="bet-chips">
+            <div class="chip chip-5 ${state.betInput === 25 ? 'selected' : ''}" onclick="state.betInput = 25; render()">$25</div>
+            <div class="chip chip-25 ${state.betInput === 50 ? 'selected' : ''}" onclick="state.betInput = 50; render()">$50</div>
+            <div class="chip chip-100 ${state.betInput === 100 ? 'selected' : ''}" onclick="state.betInput = 100; render()">$100</div>
+            <div class="chip chip-500 ${state.betInput === 250 ? 'selected' : ''}" onclick="state.betInput = 250; render()">$250</div>
+          </div>
+          <div class="bet-display">$<span id="betVal">${state.betInput}</span></div>
+          <div class="bet-buttons">
+            <button class="btn btn-secondary" onclick="state.betInput = Math.max(5, state.betInput - 25); render()">- $25</button>
+            <button class="btn btn-secondary" onclick="state.betInput = Math.min(state.bankroll, state.betInput + 25); render()">+ $25</button>
+          </div>
+          <button class="btn btn-deal" onclick="placeBet(state.betInput)" ${state.betInput > state.bankroll ? 'disabled' : ''}>Deal</button>
+          ${state.showCount ? `<div style="font-size:12px; color:rgba(255,255,255,0.35); margin-top:8px;">Suggested: ${optBet.label} ($${optBet.min}–$${optBet.max})</div>` : ''}
+        </div>
+      </div>`;
+  } else {
+    // Playing / result
+    let dealerTotal = state.dealerRevealed ? handTotal(state.dealerHand) : cardValue(state.dealerHand[0]);
+
+    let dealerCards = state.dealerHand.map((c, i) =>
+      (!state.dealerRevealed && i === 1) ? renderCard(c, true) : renderCard(c)
+    ).join('');
+
+    let dealerTotalClass = '';
+    if (state.dealerRevealed && handTotal(state.dealerHand) > 21) dealerTotalClass = 'bust';
+    if (state.dealerRevealed && isBlackjack(state.dealerHand)) dealerTotalClass = 'blackjack';
+
+    let playerSection = '';
+    if (state.playerHands.length === 1) {
+      let hand = state.playerHands[0];
+      let ht = handTotal(hand);
+      let totalClass = ht > 21 ? 'bust' : (isBlackjack(hand) ? 'blackjack' : '');
+      playerSection = `
+        <div class="player-area">
+          <div class="cards-row">${hand.map(c => renderCard(c)).join('')}</div>
+          <div class="hand-total ${totalClass}">${ht}${isSoft(hand) && ht < 21 ? ' (soft)' : ''}</div>
+          <div class="hand-label">Your Hand${state.handBets[0] ? ' · $' + state.handBets[0] : ''}</div>
+        </div>`;
+    } else {
+      let handsHtml = state.playerHands.map((hand, idx) => {
+        let ht = handTotal(hand);
+        let totalClass = ht > 21 ? 'bust' : '';
+        let isActive = idx === state.activeHandIndex && state.phase === 'playing';
+        let resultLabel = state.handResults[idx] ? ` · ${state.handResults[idx].toUpperCase()}` : '';
+        return `
+          <div class="split-hand ${isActive ? 'active-hand' : ''}">
+            <div class="cards-row">${hand.map(c => renderCard(c)).join('')}</div>
+            <div class="hand-total ${totalClass}">${ht}</div>
+            <div class="hand-label">Hand ${idx + 1} · $${state.handBets[idx]}${resultLabel}</div>
+          </div>`;
+      }).join('');
+      playerSection = `<div class="player-area"><div class="split-container">${handsHtml}</div></div>`;
+    }
+
+    let resultBanner = '';
+    if (state.phase === 'result') {
+      resultBanner = `<div class="result-banner ${state.resultClass}">${state.resultText}</div>`;
+    }
+
+    mainContent = `
+      <div class="table-surface">
+        ${resultBanner}
+        <div class="dealer-area">
+          <div class="hand-label">Dealer</div>
+          <div class="cards-row">${dealerCards}</div>
+          <div class="hand-total ${dealerTotalClass}">${state.dealerRevealed ? handTotal(state.dealerHand) : dealerTotal + ' + ?'}</div>
+        </div>
+        ${playerSection}
+      </div>`;
+  }
+
+  // ── CONTROLS BAR ──
+  let controls = '';
+  if (state.phase === 'playing') {
+    let hand = state.playerHands[state.activeHandIndex];
+    let canDouble = hand.length === 2 && state.bankroll >= state.handBets[state.activeHandIndex];
+    let canSplit = isPair(hand) && state.playerHands.length < 4 && hand.length === 2 && state.bankroll >= state.handBets[state.activeHandIndex];
+
+    controls = `
+      <div class="controls-bar">
+        <button class="btn btn-hit" onclick="playerAction('hit')">Hit (H)</button>
+        <button class="btn btn-stand" onclick="playerAction('stand')">Stand (S)</button>
+        <button class="btn btn-double" onclick="playerAction('double')" ${!canDouble ? 'disabled' : ''}>Double (D)</button>
+        <button class="btn btn-split" onclick="playerAction('split')" ${!canSplit ? 'disabled' : ''}>Split (P)</button>
+        <div class="key-hints">
+          <span class="key-hint"><span class="kbd">H</span> Hit</span>
+          <span class="key-hint"><span class="kbd">S</span> Stand</span>
+          <span class="key-hint"><span class="kbd">D</span> Double</span>
+          <span class="key-hint"><span class="kbd">P</span> Split</span>
+        </div>
+      </div>`;
+  } else if (state.phase === 'result') {
+    controls = `
+      <div class="controls-bar">
+        <button class="btn btn-deal" onclick="nextHand()">Next Hand (Space)</button>
+        <button class="btn btn-secondary" onclick="endSession()">End Session</button>
+      </div>`;
+  }
+
+  // ── RIGHT SIDEBAR ──
+  let feedbackHtml = state.feedback.slice(0, 8).map(f => `
+    <div class="feedback-panel feedback-${f.type}">
+      <div class="feedback-header">${f.type === 'correct' ? '✓' : f.type === 'incorrect' ? '✗' : f.type === 'tip' ? '★' : 'ℹ'} ${f.title}</div>
+      <div class="feedback-body">${f.body}</div>
+    </div>`).join('');
+
+  let strategyChartHtml = '';
+  if (state.showStrategy && state.phase === 'playing') {
+    strategyChartHtml = renderMiniStrategyChart();
+  }
+
+  let rightSidebar = `
+    <div class="sidebar-right">
+      <div class="section-title">Live Feedback</div>
+      ${feedbackHtml || '<div style="color:rgba(255,255,255,0.3); font-size:13px; padding:10px;">Feedback will appear here as you play.</div>'}
+      ${strategyChartHtml}
+    </div>`;
+
+  // ── SUMMARY MODAL ──
+  let summaryModal = '';
+  if (state.showSummary) {
+    let totalDec = state.correctDecisions + state.incorrectDecisions;
+    let totalBets = state.correctBets + state.incorrectBets;
+    let decAcc = totalDec > 0 ? Math.round((state.correctDecisions / totalDec) * 100) : 0;
+    let betAcc = totalBets > 0 ? Math.round((state.correctBets / totalBets) * 100) : 0;
+    let pnlFinal = state.bankroll - state.startingBankroll;
+
+    let topMistakes = {};
+    state.mistakes.forEach(m => {
+      let key = `${m.hand} vs ${m.dealer}: ${m.optimal}`;
+      topMistakes[key] = (topMistakes[key] || 0) + 1;
+    });
+    let sortedMistakes = Object.entries(topMistakes).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+    let mistakesHtml = sortedMistakes.map(([desc, count]) =>
+      `<div class="mistake-item"><strong>${count}x</strong> — ${desc}</div>`
+    ).join('') || '<div style="color:rgba(255,255,255,0.4); font-size:13px;">No mistakes recorded. Perfect play!</div>';
+
+    let grade = decAcc >= 95 ? 'A+' : decAcc >= 90 ? 'A' : decAcc >= 80 ? 'B' : decAcc >= 70 ? 'C' : decAcc >= 60 ? 'D' : 'F';
+    let gradeColor = decAcc >= 80 ? 'var(--green)' : decAcc >= 60 ? 'var(--gold)' : 'var(--red)';
+
+    summaryModal = `
+      <div class="modal-overlay" onclick="if(event.target===this){state.showSummary=false;render();}">
+        <div class="modal">
+          <h2>Session Summary</h2>
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-card-label">Final Bankroll</div>
+              <div class="summary-card-value" style="color:var(--gold-light)">$${state.bankroll.toLocaleString()}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card-label">P&L</div>
+              <div class="summary-card-value" style="color:${pnlFinal >= 0 ? 'var(--green)' : 'var(--red)'}">${pnlFinal >= 0 ? '+' : ''}$${pnlFinal.toLocaleString()}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card-label">Play Accuracy</div>
+              <div class="summary-card-value" style="color:${gradeColor}">${decAcc}% (${grade})</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card-label">Bet Accuracy</div>
+              <div class="summary-card-value" style="color:${betAcc >= 80 ? 'var(--green)' : 'var(--gold)'}">${betAcc}%</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card-label">Hands Played</div>
+              <div class="summary-card-value">${state.handsPlayed}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card-label">Decisions</div>
+              <div class="summary-card-value"><span style="color:var(--green)">${state.correctDecisions}</span> / <span style="color:var(--red)">${state.incorrectDecisions}</span></div>
+            </div>
+          </div>
+          <div class="section-title" style="margin-bottom:8px;">Top Mistakes to Drill</div>
+          <div class="mistakes-list">${mistakesHtml}</div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-deal" style="flex:1" onclick="resetAll()">New Session</button>
+            <button class="btn btn-secondary" style="flex:1" onclick="state.showSummary=false;render()">Close</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ── MOBILE STATS BAR ──
+  let mobileStats = `
+    <div class="mobile-stats">
+      <div class="mobile-stat">
+        <span class="mobile-stat-label">Bankroll</span>
+        <span class="mobile-stat-value" style="color:var(--gold-light)">$${state.bankroll.toLocaleString()}</span>
+      </div>
+      <div class="mobile-stat">
+        <span class="mobile-stat-label">P&L</span>
+        <span class="mobile-stat-value" style="color:${pnl >= 0 ? 'var(--green)' : 'var(--red)'}">${pnl >= 0 ? '+' : ''}$${pnl}</span>
+      </div>
+      ${state.showCount ? `
+      <div class="mobile-stat">
+        <span class="mobile-stat-label">TC</span>
+        <span class="mobile-stat-value" style="color:var(--gold-light)">${tc >= 0 ? '+' : ''}${tc.toFixed(1)}</span>
+      </div>
+      <div class="mobile-stat">
+        <span class="mobile-stat-label">RC</span>
+        <span class="mobile-stat-value">${state.runningCount >= 0 ? '+' : ''}${state.runningCount}</span>
+      </div>` : ''}
+      <div class="mobile-stat">
+        <span class="mobile-stat-label">Hands</span>
+        <span class="mobile-stat-value">${state.handsPlayed}</span>
+      </div>
+      <div class="mobile-stat">
+        <span class="mobile-stat-label">Accuracy</span>
+        <span class="mobile-stat-value" style="color:${accuracy >= 80 ? 'var(--green)' : accuracy >= 60 ? 'var(--gold)' : 'var(--red)'}">${accuracy}%</span>
+      </div>
+    </div>`;
+
+  // ── MOBILE FEEDBACK ──
+  let latestFeedback = state.feedback.length > 0 ? state.feedback[0] : null;
+  let mobileFeedback = latestFeedback ? `
+    <div class="mobile-feedback">
+      <div class="feedback-panel feedback-${latestFeedback.type}">
+        <div class="feedback-header">${latestFeedback.type === 'correct' ? '✓' : latestFeedback.type === 'incorrect' ? '✗' : latestFeedback.type === 'tip' ? '★' : 'ℹ'} ${latestFeedback.title}</div>
+        <div class="feedback-body">${latestFeedback.body}</div>
+      </div>
+    </div>` : '';
+
+  app.innerHTML = leftSidebar + mobileStats + `<div class="main-area">${mainContent}${controls}</div>` + mobileFeedback + rightSidebar + summaryModal;
+}
+
+function renderMiniStrategyChart() {
+  if (state.phase !== 'playing') return '';
+  let hand = state.playerHands[state.activeHandIndex];
+  let dealerUp = state.dealerHand[0];
+  let dv = cardValue(dealerUp);
+  let total = handTotal(hand);
+  let soft = isSoft(hand);
+
+  let dealerCols = ['2','3','4','5','6','7','8','9','10','A'];
+
+  // Show relevant section
+  let rows = [];
+  if (isPair(hand)) {
+    let pairs = [['A,A'], ['10,10'], ['9,9'], ['8,8'], ['7,7'], ['6,6'], ['5,5'], ['4,4'], ['3,3'], ['2,2']];
+    let pairVals = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+    pairs.forEach((p, i) => {
+      let row = [p[0]];
+      dealerCols.forEach(dc => {
+        let dval = dc === 'A' ? 11 : parseInt(dc);
+        let fakeHand = [{rank: pairVals[i] === 11 ? 'A' : String(pairVals[i]), suit: '♠'}, {rank: pairVals[i] === 11 ? 'A' : String(pairVals[i]), suit: '♥'}];
+        let opt = getOptimalPlay(fakeHand, {rank: dc, suit: '♠'}, true, true);
+        let highlight = (pairVals[i] === cardValue(hand[0]) && dval === cardValue(dealerUp));
+        row.push({ action: opt[0].toUpperCase(), highlight });
+      });
+      rows.push(row);
+    });
+  } else if (soft) {
+    for (let t = 20; t >= 13; t--) {
+      let row = [`A,${t - 11}`];
+      dealerCols.forEach(dc => {
+        let dval = dc === 'A' ? 11 : parseInt(dc);
+        let fakeHand = [{rank: 'A', suit: '♠'}, {rank: String(t - 11), suit: '♥'}];
+        let opt = getOptimalPlay(fakeHand, {rank: dc, suit: '♠'}, false, true);
+        let highlight = (t === total && dval === cardValue(dealerUp));
+        row.push({ action: opt[0].toUpperCase(), highlight });
+      });
+      rows.push(row);
+    }
+  } else {
+    for (let t = 17; t >= 5; t--) {
+      let row = [String(t)];
+      dealerCols.forEach(dc => {
+        let r1 = Math.min(10, Math.max(2, t - 2));
+        let r2 = t - r1;
+        if (r2 < 2 || r2 > 10) { r1 = Math.floor(t / 2); r2 = t - r1; }
+        let fakeHand = [{rank: String(r1), suit: '♠'}, {rank: String(r2), suit: '♥'}];
+        let opt = getOptimalPlay(fakeHand, {rank: dc, suit: '♠'}, false, true);
+        let dval = dc === 'A' ? 11 : parseInt(dc);
+        let highlight = (t === total && dval === cardValue(dealerUp));
+        row.push({ action: opt[0].toUpperCase(), highlight });
+      });
+      rows.push(row);
+    }
+  }
+
+  let actionClass = { 'H': 's-h', 'S': 's-s', 'D': 's-d', 'P': 's-p' };
+
+  let headerRow = '<tr><th></th>' + dealerCols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+  let bodyRows = rows.map(r => {
+    let label = r[0];
+    let cells = r.slice(1).map(c => `<td class="${actionClass[c.action] || ''} ${c.highlight ? 's-hl' : ''}">${c.action}</td>`).join('');
+    return `<tr><th>${label}</th>${cells}</tr>`;
+  }).join('');
+
+  let chartTitle = isPair(hand) ? 'Pairs' : (soft ? 'Soft Totals' : 'Hard Totals');
+
+  return `
+    <div class="section-title">Strategy Chart — ${chartTitle}</div>
+    <div class="strategy-chart">
+      <table>${headerRow}${bodyRows}</table>
+      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; font-size:10px;">
+        <span class="s-h" style="padding:2px 6px; border-radius:3px;">H = Hit</span>
+        <span class="s-s" style="padding:2px 6px; border-radius:3px;">S = Stand</span>
+        <span class="s-d" style="padding:2px 6px; border-radius:3px;">D = Double</span>
+        <span class="s-p" style="padding:2px 6px; border-radius:3px;">P = Split</span>
+      </div>
+    </div>`;
+}
+
+function resetAll() {
+  state = {
+    phase: 'welcome',
+    bankroll: 10000,
+    startingBankroll: 10000,
+    bet: 0,
+    betInput: 100,
+    deck: [],
+    decksCount: state.decksCount,
+    runningCount: 0,
+    cardsDealt: 0,
+    handsPlayed: 0,
+    correctDecisions: 0,
+    incorrectDecisions: 0,
+    correctBets: 0,
+    incorrectBets: 0,
+    playerHands: [[]],
+    activeHandIndex: 0,
+    handBets: [],
+    handResults: [],
+    dealerHand: [],
+    dealerRevealed: false,
+    feedback: [],
+    mistakes: [],
+    showCount: state.showCount,
+    showStrategy: state.showStrategy,
+    insuranceOffered: false,
+    insuranceDeclined: false,
+    resultText: '',
+    resultClass: '',
+    showSummary: false,
+  };
+  render();
+}
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', (e) => {
+  if (state.showSummary) return;
+
+  if (state.phase === 'playing') {
+    if (e.key === 'h' || e.key === 'H') playerAction('hit');
+    if (e.key === 's' || e.key === 'S') playerAction('stand');
+    if (e.key === 'd' || e.key === 'D') playerAction('double');
+    if (e.key === 'p' || e.key === 'P') playerAction('split');
+  }
+
+  if (state.phase === 'result' && e.key === ' ') {
+    e.preventDefault();
+    nextHand();
+  }
+
+  if (state.phase === 'betting' && e.key === 'Enter') {
+    placeBet(state.betInput);
+  }
+});
+
+// ── INIT ──
+render();
+</script>
+</body>
+</html>
