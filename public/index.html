@@ -443,6 +443,77 @@
     overflow-y: auto;
   }
 
+  .feedback-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .history-btn {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .history-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+
+  .history-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s;
+  }
+
+  .history-modal {
+    background: #1a1a24;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 480px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .history-modal h3 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .history-close {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    border-radius: 8px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .history-close:hover { background: rgba(255,255,255,0.15); }
+
+  .history-modal .feedback-panel { margin-bottom: 8px; animation: none; }
+  .history-modal .feedback-panel .feedback-body { font-size: 12px; }
+
   .feedback-panel {
     border-radius: 14px;
     padding: 16px;
@@ -821,6 +892,7 @@ let state = {
   resultText: '',
   resultClass: '',
   showSummary: false,
+  showHistory: false,
 };
 
 // ── DECK ──
@@ -966,7 +1038,7 @@ function getOptimalBet() {
 // ── FEEDBACK ──
 function addFeedback(type, title, body) {
   state.feedback.unshift({ type, title, body, id: Date.now() + Math.random() });
-  if (state.feedback.length > 20) state.feedback.pop();
+  if (state.feedback.length > 100) state.feedback.pop();
 }
 
 // ── ACTIONS ──
@@ -1461,11 +1533,19 @@ function render() {
   }
 
   // ── RIGHT SIDEBAR ──
-  let feedbackHtml = state.feedback.slice(0, 8).map(f => `
+  let MAX_VISIBLE = 4;
+  let visibleFeedback = state.feedback.slice(0, MAX_VISIBLE);
+  let hiddenCount = Math.max(0, state.feedback.length - MAX_VISIBLE);
+
+  let feedbackHtml = visibleFeedback.map(f => `
     <div class="feedback-panel feedback-${f.type}">
       <div class="feedback-header">${f.type === 'correct' ? '✓' : f.type === 'incorrect' ? '✗' : f.type === 'tip' ? '★' : 'ℹ'} ${f.title}</div>
       <div class="feedback-body">${f.body}</div>
     </div>`).join('');
+
+  let historyBtn = hiddenCount > 0
+    ? `<button class="history-btn" onclick="state.showHistory = true; render();">${hiddenCount} more — View History</button>`
+    : '';
 
   let strategyChartHtml = '';
   if (state.showStrategy && state.phase === 'playing') {
@@ -1474,10 +1554,30 @@ function render() {
 
   let rightSidebar = `
     <div class="sidebar-right">
-      <div class="section-title">Live Feedback</div>
+      <div class="feedback-header-row">
+        <div class="section-title" style="padding:0;">Live Feedback</div>
+        ${historyBtn}
+      </div>
       ${feedbackHtml || '<div style="color:rgba(255,255,255,0.3); font-size:13px; padding:10px;">Feedback will appear here as you play.</div>'}
       ${strategyChartHtml}
     </div>`;
+
+  // ── HISTORY MODAL ──
+  let historyModal = '';
+  if (state.showHistory) {
+    let allFeedbackHtml = state.feedback.map(f => `
+      <div class="feedback-panel feedback-${f.type}">
+        <div class="feedback-header">${f.type === 'correct' ? '✓' : f.type === 'incorrect' ? '✗' : f.type === 'tip' ? '★' : 'ℹ'} ${f.title}</div>
+        <div class="feedback-body">${f.body}</div>
+      </div>`).join('');
+    historyModal = `
+      <div class="history-overlay" onclick="if(event.target===this){state.showHistory=false;render();}">
+        <div class="history-modal">
+          <h3>Feedback History <button class="history-close" onclick="state.showHistory=false;render();">Close</button></h3>
+          ${allFeedbackHtml}
+        </div>
+      </div>`;
+  }
 
   // ── SUMMARY MODAL ──
   let summaryModal = '';
@@ -1582,7 +1682,7 @@ function render() {
       </div>
     </div>` : '';
 
-  app.innerHTML = leftSidebar + mobileStats + `<div class="main-area">${mainContent}${controls}</div>` + mobileFeedback + rightSidebar + summaryModal;
+  app.innerHTML = leftSidebar + mobileStats + `<div class="main-area">${mainContent}${controls}</div>` + mobileFeedback + rightSidebar + summaryModal + historyModal;
 }
 
 function renderMiniStrategyChart() {
@@ -1695,13 +1795,14 @@ function resetAll() {
     resultText: '',
     resultClass: '',
     showSummary: false,
+    showHistory: false,
   };
   render();
 }
 
 // ── KEYBOARD SHORTCUTS ──
 document.addEventListener('keydown', (e) => {
-  if (state.showSummary) return;
+  if (state.showSummary || state.showHistory) return;
 
   if (state.phase === 'playing') {
     if (e.key === 'h' || e.key === 'H') playerAction('hit');
