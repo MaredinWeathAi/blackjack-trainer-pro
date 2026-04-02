@@ -870,6 +870,7 @@ let state = {
   betInput: 100,
   deck: [],
   decksCount: 6,
+  reshuffleAt: 78, // ~75% penetration (6 decks = 312 cards, cut ~78 cards from back)
   runningCount: 0,
   cardsDealt: 0,
   handsPlayed: 0,
@@ -964,8 +965,8 @@ function getTrueCount() {
   return state.runningCount / decksRemaining;
 }
 
-function dealCard() {
-  if (state.deck.length < 20) {
+function dealCard(hidden) {
+  if (state.deck.length < state.reshuffleAt) {
     state.deck = createShoe(state.decksCount);
     state.runningCount = 0;
     state.cardsDealt = 0;
@@ -973,7 +974,9 @@ function dealCard() {
   }
   let card = state.deck.pop();
   state.cardsDealt++;
-  state.runningCount += countValue(card);
+  if (!hidden) {
+    state.runningCount += countValue(card);
+  }
   return card;
 }
 
@@ -994,7 +997,7 @@ function getOptimalPlay(hand, dealerUpcard, canSplit, canDouble) {
     if (pv === 6) return (dv >= 2 && dv <= 6) ? 'split' : 'hit';
     if (pv === 5) return (dv >= 2 && dv <= 9 && canDouble) ? 'double' : 'hit';
     if (pv === 4) return (dv >= 5 && dv <= 6) ? 'split' : 'hit';
-    if (pv === 3 || pv === 2) return (dv >= 4 && dv <= 7) ? 'split' : 'hit';
+    if (pv === 3 || pv === 2) return (dv >= 2 && dv <= 7) ? 'split' : 'hit';
   }
 
   // Soft hands
@@ -1009,8 +1012,12 @@ function getOptimalPlay(hand, dealerUpcard, canSplit, canDouble) {
       if (dv >= 3 && dv <= 6 && canDouble) return 'double';
       return 'hit';
     }
-    if (total <= 16 && total >= 13) {
+    if (total === 15 || total === 16) {
       if (dv >= 4 && dv <= 6 && canDouble) return 'double';
+      return 'hit';
+    }
+    if (total === 13 || total === 14) {
+      if (dv >= 5 && dv <= 6 && canDouble) return 'double';
       return 'hit';
     }
     return 'hit';
@@ -1085,11 +1092,12 @@ function placeBet(amount) {
   state.playerHands[0].push(dealCard());
   state.dealerHand.push(dealCard());
   state.playerHands[0].push(dealCard());
-  state.dealerHand.push(dealCard());
+  state.dealerHand.push(dealCard(true)); // hole card — not counted until revealed
 
   // Check for naturals
   if (isBlackjack(state.playerHands[0]) && isBlackjack(state.dealerHand)) {
     state.dealerRevealed = true;
+    state.runningCount += countValue(state.dealerHand[1]); // count revealed hole card
     state.phase = 'result';
     state.resultText = 'PUSH';
     state.resultClass = 'push';
@@ -1098,6 +1106,7 @@ function placeBet(amount) {
     addFeedback('info', 'Push', 'Both player and dealer have Blackjack.');
   } else if (isBlackjack(state.playerHands[0])) {
     state.dealerRevealed = true;
+    state.runningCount += countValue(state.dealerHand[1]); // count revealed hole card
     state.phase = 'result';
     state.resultText = 'BLACKJACK!';
     state.resultClass = 'blackjack';
@@ -1107,6 +1116,7 @@ function placeBet(amount) {
     addFeedback('tip', 'Blackjack!', `Natural 21 pays 3:2. You win $${Math.round(amount * 1.5)}.`);
   } else if (isBlackjack(state.dealerHand)) {
     state.dealerRevealed = true;
+    state.runningCount += countValue(state.dealerHand[1]); // count revealed hole card
     state.phase = 'result';
     state.resultText = 'DEALER BLACKJACK';
     state.resultClass = 'lose';
@@ -1199,8 +1209,8 @@ function dealerPlay() {
   state.phase = 'dealer_turn';
   state.dealerRevealed = true;
 
-  // Update count for hole card
-  // (hole card was already counted when dealt, so no update needed)
+  // Now count the hole card (dealer's second card) since it's being revealed
+  state.runningCount += countValue(state.dealerHand[1]);
 
   let allBusted = state.playerHands.every(h => handTotal(h) > 21);
 
