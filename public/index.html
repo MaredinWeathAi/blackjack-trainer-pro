@@ -824,55 +824,200 @@
   .mobile-feedback .feedback-header { font-size: 11px; margin-bottom: 4px; }
   .mobile-feedback .feedback-body { font-size: 11px; line-height: 1.4; }
 
-  /* Responsive */
-  @media (max-width: 1100px) {
-    .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; }
-    .sidebar-left, .sidebar-right { display: none; }
-    .mobile-stats { display: flex; }
-    .mobile-feedback { display: block; }
+  /* ── ROTATE PROMPT (portrait on phones) ── */
+  .rotate-prompt {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #0a0a0f;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+    padding: 40px;
   }
 
-  @media (max-width: 600px) {
-    .table-surface { padding: 16px 10px; min-height: 350px; }
-    .table-surface::before { inset: 10px; }
-    .table-surface::after { font-size: 10px; letter-spacing: 2px; }
+  .rotate-prompt .rotate-icon {
+    font-size: 64px;
+    animation: rotateNudge 2s ease-in-out infinite;
+  }
 
-    .card { width: 58px; height: 82px; }
-    .card-rank { font-size: 11px; }
-    .card-suit-small { font-size: 9px; }
-    .card-suit-big { font-size: 22px; }
-    .card-corner { top: 3px; left: 5px; }
-    .card-corner-br { bottom: 3px; right: 5px; }
+  .rotate-prompt h2 {
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .rotate-prompt p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    max-width: 300px;
+    line-height: 1.5;
+  }
+
+  @keyframes rotateNudge {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(90deg); }
+    50% { transform: rotate(90deg); }
+    75% { transform: rotate(0deg); }
+  }
+
+  /* ── Desktop / large tablet (> 1100px): default 3-col layout, no changes ── */
+
+  /* ── Tablet & phone PORTRAIT (≤ 1100px, portrait): show rotate prompt ── */
+  @media (max-width: 1100px) and (orientation: portrait) {
+    .rotate-prompt { display: flex; }
+    .app { display: none; }
+  }
+
+  /* ── Tablet landscape (601px–1100px wide, landscape): compact 3-col ── */
+  @media (max-width: 1100px) and (orientation: landscape) {
+    .app {
+      grid-template-columns: 200px 1fr 220px;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .mobile-stats { display: none; }
+    .mobile-feedback { display: none; }
+
+    .sidebar-left, .sidebar-right {
+      display: flex;
+      padding: 12px 10px;
+      gap: 10px;
+    }
+
+    .logo { padding-bottom: 8px; }
+    .logo-icon { width: 28px; height: 28px; font-size: 14px; border-radius: 7px; }
+    .logo-text { font-size: 14px; }
+    .logo-sub { font-size: 9px; }
+
+    .stat-group { padding: 10px; border-radius: 10px; }
+    .stat-group-title { font-size: 9px; margin-bottom: 8px; }
+    .stat-row { padding: 3px 0; }
+    .stat-label { font-size: 11px; }
+    .stat-value { font-size: 12px; }
+
+    .count-display { padding: 10px; border-radius: 10px; }
+    .count-label { font-size: 9px; }
+    .count-big { font-size: 28px; }
+    .count-sub { font-size: 11px; }
+
+    .hilo-cheat { padding: 10px; border-radius: 10px; }
+    .hilo-row { padding: 4px 8px; font-size: 11px; margin-bottom: 2px; }
+    .hilo-val { font-size: 12px; }
+
+    .bet-guide { padding: 8px 10px; font-size: 11px; border-radius: 10px; }
+    .bet-guide .guide-label { font-size: 8px; }
+
+    .section-title { font-size: 11px; }
+    .strategy-chart { padding: 8px; border-radius: 10px; }
+    .strategy-chart th, .strategy-chart td { padding: 2px 1px; font-size: 8px; }
+
+    .feedback-panel { padding: 8px 10px; border-radius: 8px; }
+    .feedback-header { font-size: 11px; }
+    .feedback-body { font-size: 10px; }
+
+    .table-surface { padding: 12px 10px; min-height: unset; }
+    .table-surface::before { inset: 8px; }
+    .table-surface::after { font-size: 9px; letter-spacing: 2px; }
+
+    .card { width: 52px; height: 74px; }
+    .card-rank { font-size: 10px; }
+    .card-suit-small { font-size: 8px; }
+    .card-suit-big { font-size: 20px; }
+    .card-corner { top: 2px; left: 4px; }
+    .card-corner-br { bottom: 2px; right: 4px; }
 
     .cards-row { gap: 4px; }
-    .dealer-area { margin-bottom: 30px; }
-    .player-area { margin-top: 10px; }
-    .hand-total { font-size: 13px; padding: 3px 10px; }
-    .hand-label { font-size: 10px; letter-spacing: 1.5px; }
+    .dealer-area { margin-bottom: 16px; }
+    .player-area { margin-top: 6px; }
+    .hand-total { font-size: 12px; padding: 2px 8px; }
+    .hand-label { font-size: 9px; letter-spacing: 1px; }
 
-    .controls-bar { padding: 12px 10px; gap: 6px; }
-    .btn { padding: 10px 16px; font-size: 13px; border-radius: 10px; }
-    .btn-deal { padding: 12px 28px; }
-
-    .bet-chips { gap: 6px; }
-    .chip { width: 46px; height: 46px; font-size: 11px; border-width: 2px; }
-    .bet-display { font-size: 22px; }
-
+    .controls-bar { padding: 8px 10px; gap: 6px; }
+    .btn { padding: 8px 14px; font-size: 12px; border-radius: 8px; }
+    .btn-deal { padding: 10px 24px; }
     .key-hints { display: none; }
 
-    .welcome-screen h1 { font-size: 28px; }
-    .welcome-screen p { font-size: 13px; }
+    .count-badge { font-size: 9px; padding: 1px 5px; bottom: -6px; }
 
-    .result-banner { font-size: 18px; padding: 10px 24px; }
+    .shoe-progress { height: 4px; }
 
-    .split-container { gap: 16px; }
-    .split-hand { padding: 6px; }
+    .result-banner { font-size: 16px; padding: 8px 20px; }
+
+    .welcome-screen h1 { font-size: 24px; }
+    .welcome-screen p { font-size: 12px; }
+    .settings-row select { font-size: 12px; }
+
+    .bet-chips { gap: 4px; }
+    .chip { width: 42px; height: 42px; font-size: 10px; border-width: 2px; }
+    .bet-display { font-size: 20px; }
   }
 
-  /* Safe area for notched phones */
+  /* ── Phone landscape (≤ 600px tall): extra compact ── */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .app { grid-template-columns: 170px 1fr 190px; }
+
+    .sidebar-left, .sidebar-right { padding: 8px; gap: 6px; }
+
+    .logo { display: none; }
+
+    .stat-group { padding: 6px 8px; }
+    .stat-group-title { font-size: 8px; margin-bottom: 4px; }
+    .stat-row { padding: 1px 0; }
+    .stat-label { font-size: 10px; }
+    .stat-value { font-size: 11px; }
+
+    .count-display { padding: 6px 8px; }
+    .count-big { font-size: 22px; }
+    .count-sub { font-size: 10px; }
+
+    .hilo-cheat { padding: 6px 8px; }
+    .hilo-row { padding: 3px 6px; font-size: 10px; }
+
+    .bet-guide { padding: 6px 8px; font-size: 10px; }
+
+    .strategy-chart { padding: 6px; }
+    .strategy-chart th, .strategy-chart td { padding: 1px; font-size: 7px; }
+
+    .feedback-panel { padding: 6px 8px; }
+    .feedback-header { font-size: 10px; }
+    .feedback-body { font-size: 9px; }
+
+    .card { width: 44px; height: 62px; }
+    .card-rank { font-size: 9px; }
+    .card-suit-small { font-size: 7px; }
+    .card-suit-big { font-size: 16px; }
+    .count-badge { font-size: 8px; padding: 1px 4px; bottom: -5px; }
+
+    .table-surface { padding: 8px; }
+    .table-surface::before { display: none; }
+    .table-surface::after { display: none; }
+
+    .dealer-area { margin-bottom: 10px; }
+    .player-area { margin-top: 4px; }
+    .hand-total { font-size: 11px; padding: 2px 6px; }
+    .hand-label { font-size: 8px; }
+
+    .controls-bar { padding: 6px 8px; gap: 4px; }
+    .btn { padding: 6px 12px; font-size: 11px; }
+
+    .result-banner { font-size: 14px; padding: 6px 16px; }
+  }
+
+  /* Safe area for notched phones in landscape */
+  @supports (padding-left: env(safe-area-inset-left)) {
+    @media (orientation: landscape) {
+      .sidebar-left { padding-left: calc(10px + env(safe-area-inset-left)); }
+      .sidebar-right { padding-right: calc(10px + env(safe-area-inset-right)); }
+    }
+  }
+
   @supports (padding-top: env(safe-area-inset-top)) {
-    .mobile-stats { padding-top: calc(10px + env(safe-area-inset-top)); }
-    .controls-bar { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+    @media (orientation: portrait) {
+      .rotate-prompt { padding-top: calc(40px + env(safe-area-inset-top)); }
+    }
   }
 
   /* ── HI-LO CHEAT SHEET ── */
@@ -948,6 +1093,11 @@
 </style>
 </head>
 <body>
+<div class="rotate-prompt">
+  <div class="rotate-icon">📱</div>
+  <h2>Rotate Your Phone</h2>
+  <p>Blackjack Trainer Pro is designed for landscape mode so you can see the strategy chart, card counts, and bet guidance while you play.</p>
+</div>
 <div class="app" id="app"></div>
 <div class="strat-tooltip" id="stratTooltip"></div>
 
